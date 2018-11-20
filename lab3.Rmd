@@ -1,0 +1,113 @@
+---
+title: "lab3: Reducing Crime"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#1. Introduction
+
+This research is aimed at understanding the determinants of crime and generate policy suggestions that are applicable to the local government. The study aims at finding out how different factors affect the crime rate ("crmrte") and what kind of policies can lead to lower crime rates.
+
+## What we are graded on:
+Introduction. As you understand it, what is the motivation for this team’s report? Does the introduction as written make the motivation easy to understand? Is the analysis well-motivated? Note that we’re not necessarily expecting a long introduction. Even a single paragraph is probably enough for most reports.
+
+#2.Initial EDA
+
+```{r}
+crime_data = read.csv("crime_v2.csv")
+objects(crime_data)
+```
+
+Finding out number of observations
+```{r}
+length(crime_data$crmrte)
+```
+There are 97 of them.
+
+
+##1. Important variables
+1. What do you want to measure? Make sure you identify variables that will be relevant to the concerns of the political campaign.
+
+### Important Outcome variables
+1. Crime Rate ("crimrte")
+2. Probablity of Arrest ("prbarr")
+3. Probability of Conviction ("prbconv")
+4. Probability of Going to Prison ("prbpris")
+
+### Important input variables:
+1. Police per capita ("polpc")
+2. Density ("density")
+3. Tax revenue per capita ("taxpc")
+4. Percentage of Young males ("pctymle")
+5. Percentage of minorities ("pctmin80")
+
+## 2. Transformations
+2. What transformations should you apply to each variable? This is very important because transformations can reveal linearities in the data, make our results relevant, or help us meet model assumptions.
+
+
+## 3. Data Cleansing
+3. Are your choices supported by EDA? You will likely start with some general EDA to detect anomalies (missing values, top-coded variables, etc.). From then on, your EDA should be interspersed with your
+model building. Use visual tools to guide your decisions
+
+
+1. Removing NA in some cases
+```{r}
+crime_data_corr = na.omit(crime_data)
+```
+
+2. Probability values > 1 in some cases. There are 11 such values. Perhaps we have to leave these rows out.
+```{r}
+sum(crime_data_corr$prbarr > 1)
+sum(as.numeric(as.character(crime_data_corr$prbconv)) > 1)
+sum(crime_data_corr$prbpris > 1)
+```
+3. Some values are coded as levels: prbconv - need to fix
+Taken care of above
+
+## What we are graded on:
+The Initial EDA. Is the EDA presented in a systematic and transparent way? Did the team notice any anomalous values? Is there a sufficient justification for any datapoints that are removed? Did the report note any coding features that affect the meaning of variables (e.g. top-coding or bottom-coding)? Can you identify anything the team could do to improve its understanding or treatment of the data?
+
+
+#3. Models
+At a minimum, you should include the following three specifications:
+
+## Model 1
+
+• One model with only the explanatory variables of key interest (possibly transformed, as determined by your EDA), and no other covariates
+
+## Model 2
+• One model that includes key explanatory variables and only covariates that you believe increase the accuracy of your results without introducing substantial bias (for example, you should not include outcome variables that will absorb some of the causal effect you are interested in). This model should strike a balance between accuracy and parsimony and reflect your best understanding of the determinants of crime.
+
+## Model 3
+
+• One model that includes the previous covariates, and most, if not all, other covariates. A key purpose of this model is to demonstrate the robustness of your results to model specification.
+
+Guided by your background knowledge and your EDA, other specifications may make sense. You are trying to choose points that encircle the space of reasonable modeling choices, to give an overall understanding of how these choices impact results.
+
+## What we are graded on:
+The Model Building Process. Overall, is each step in the model building process supported by EDA? Is the outcome variable (or variables) appropriate? Did the team consider available variable transformations and select them with an eye towards model plausibility and interperability? Are transformations used to expose linear relationships in scatterplots? Is there enough explanation in the text to understand the meaning of each visualization?
+
+#4. Regression Table
+
+## What we need to show:
+You will display all of your model specifications in a regression table, using a package like stargazer to format your output. It should be easy for the reader to find the coefficients that represent key effects near the top of the regression table, and scan horizontally to see how they change from specification to specification. Since we won’t cover inference for linear regression until unit 12, you should not display any standard errors at this point. You should also avoid conducting statistical tests for now (but please do point out what tests you think would be valuable).
+
+## What we are graded on:
+The Omitted Variables Discussion. Did the report miss any important sources of omitted variable bias? For each omitted variable, is there a complete discussion of the direction of bias? Are the estimated directions of bias correct? Does the team consider possible proxy variables, and if so do you find these choices plausible? Is the discussion of omitted variables linked back to the presentation of main results? In other words, does the team adequately re-evaluate their estimated effects in light of the sources of bias?
+
+#5. Omitted Variables discussion
+
+## What we need to show:
+After your model building process, you should include a substantial discussion of omitted variables. Identify what you think are the 5-10 most important omitted variables that bias results you care about. For each variable, you should estimate what direction the bias is in. If you can argue whether the bias is large or small, that is even better. State whether you have any variables available that may proxy (even imperfectly) for the omitted variable. Pay particular attention to whether each omitted variable bias is towards zero or away from zero. You will use this information to judge whether the effects you find are likely to be real, or whether they might be entirely an artifact of omitted variable bias.
+
+## What we are graded on:
+The Omitted Variables Discussion. Did the report miss any important sources of omitted variable bias? For each omitted variable, is there a complete discussion of the direction of bias? Are the estimated directions of bias correct? Does the team consider possible proxy variables, and if so do you find these choices plausible? Is the discussion of omitted variables linked back to the presentation of main results? In other words, does the team adequately re-evaluate their estimated effects in light of the sources of bias?
+
+#6. Conclusion
+
+## What we are graded on:
+Does the conclusion address the big-picture concerns that would be at the center of a political campaign? Does it raise interesting points beyond numerical estimates? Does it place relevant context around the results?
+
