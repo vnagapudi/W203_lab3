@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 This research is aimed at understanding the determinants of crime and generate policy suggestions that are applicable to the local government. The study aims at finding out how different factors affect the crime rate ("crmrte") and what kind of policies can lead to lower crime rates.
 
 ## What we are graded on:
-Introduction. As you understand it, what is the motivation for this team’s report? Does the introduction as written make the motivation easy to understand? Is the analysis well-motivated? Note that we’re not necessarily expecting a long introduction. Even a single paragraph is probably enough for most reports.
+Introduction. As you understand it, what is the motivation for this team's report? Does the introduction as written make the motivation easy to understand? Is the analysis well-motivated? Note that we're not necessarily expecting a long introduction. Even a single paragraph is probably enough for most reports.
 
 #2.Initial EDA
 
@@ -103,7 +103,7 @@ At a minimum, you should include the following three specifications:
 
 ## Model 1
 
-• One model with only the explanatory variables of key interest (possibly transformed, as determined by your EDA), and no other covariates
+ One model with only the explanatory variables of key interest (possibly transformed, as determined by your EDA), and no other covariates
 Things to do:
 - Get list of key explanatory variables 
 - Should we find the correlation between them? 
@@ -111,7 +111,7 @@ Things to do:
 - Get AIC, r.squared and other key elements of MLR
 
 ## Model 2
-• One model that includes key explanatory variables and only covariates that you believe increase the accuracy of your results without introducing substantial bias (for example, you should not include outcome variables that will absorb some of the causal effect you are interested in). This model should strike a balance between accuracy and parsimony and reflect your best understanding of the determinants of crime.
+ One model that includes key explanatory variables and only covariates that you believe increase the accuracy of your results without introducing substantial bias (for example, you should not include outcome variables that will absorb some of the causal effect you are interested in). This model should strike a balance between accuracy and parsimony and reflect your best understanding of the determinants of crime.
 
 Things to do:
 - Get list of key secondary explanatory variables
@@ -121,7 +121,7 @@ Things to do:
 
 ## Model 3
 
-• One model that includes the previous covariates, and most, if not all, other covariates. A key purpose of this model is to demonstrate the robustness of your results to model specification.
+ One model that includes the previous covariates, and most, if not all, other covariates. A key purpose of this model is to demonstrate the robustness of your results to model specification.
 
 Things to do:
 - This is the kitchensink where you throw everything in
@@ -148,7 +148,7 @@ The Model Building Process. Overall, is each step in the model building process 
 #4. Regression Table
 
 ## What we need to show:
-You will display all of your model specifications in a regression table, using a package like stargazer to format your output. It should be easy for the reader to find the coefficients that represent key effects near the top of the regression table, and scan horizontally to see how they change from specification to specification. Since we won’t cover inference for linear regression until unit 12, you should not display any standard errors at this point. You should also avoid conducting statistical tests for now (but please do point out what tests you think would be valuable).
+You will display all of your model specifications in a regression table, using a package like stargazer to format your output. It should be easy for the reader to find the coefficients that represent key effects near the top of the regression table, and scan horizontally to see how they change from specification to specification. Since we won't cover inference for linear regression until unit 12, you should not display any standard errors at this point. You should also avoid conducting statistical tests for now (but please do point out what tests you think would be valuable).
 
 https://www.jakeruss.com/cheatsheets/stargazer/
 

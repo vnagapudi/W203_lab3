@@ -1,0 +1,463 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={lab3: Reducing Crime},
+            pdfauthor={Thomas Drage, Venkatesh Nagapudi, Miguel Jamie},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{lab3: Reducing Crime}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Thomas Drage, Venkatesh Nagapudi, Miguel Jamie}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{November 20, 2018}
+
+
+\begin{document}
+\maketitle
+
+\section{1. Introduction}\label{introduction}
+
+This research is aimed at understanding the determinants of crime and
+generate policy suggestions that are applicable to the local government.
+The study aims at finding out how different factors affect the crime
+rate (``crmrte'') and what kind of policies can lead to lower crime
+rates.
+
+\subsection{What we are graded on:}\label{what-we-are-graded-on}
+
+Introduction. As you understand it, what is the motivation for this
+team's report? Does the introduction as written make the motivation easy
+to understand? Is the analysis well-motivated? Note that we're not
+necessarily expecting a long introduction. Even a single paragraph is
+probably enough for most reports.
+
+\section{2.Initial EDA}\label{initial-eda}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{rm}\NormalTok{(}\DataTypeTok{list =} \KeywordTok{ls}\NormalTok{())}
+\NormalTok{crime_data =}\StringTok{ }\KeywordTok{read.csv}\NormalTok{(}\StringTok{"crime_v2.csv"}\NormalTok{)}
+\KeywordTok{objects}\NormalTok{(crime_data)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  [1] "avgsen"   "central"  "county"   "crmrte"   "density"  "mix"     
+##  [7] "pctmin80" "pctymle"  "polpc"    "prbarr"   "prbconv"  "prbpris" 
+## [13] "taxpc"    "urban"    "wcon"     "west"     "wfed"     "wfir"    
+## [19] "wloc"     "wmfg"     "wser"     "wsta"     "wtrd"     "wtuc"    
+## [25] "year"
+\end{verbatim}
+
+Finding out number of observations
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{length}\NormalTok{(crime_data}\OperatorTok{$}\NormalTok{crmrte)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 97
+\end{verbatim}
+
+There are 97 of them.
+
+\subsection{1. Data Cleansing}\label{data-cleansing}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\item
+  Are your choices supported by EDA? You will likely start with some
+  general EDA to detect anomalies (missing values, top-coded variables,
+  etc.). From then on, your EDA should be interspersed with your model
+  building. Use visual tools to guide your decisions
+\item
+  Removing NA in some cases
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{crime_data_corr =}\StringTok{ }\KeywordTok{na.omit}\NormalTok{(crime_data)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  Probability values \textgreater{} 1 in some cases. There are 11 such
+  values. Perhaps we have to leave these rows out.
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{sum}\NormalTok{(crime_data_corr}\OperatorTok{$}\NormalTok{prbarr }\OperatorTok{>}\StringTok{ }\DecValTok{1}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 1
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{sum}\NormalTok{(}\KeywordTok{as.numeric}\NormalTok{(}\KeywordTok{as.character}\NormalTok{(crime_data_corr}\OperatorTok{$}\NormalTok{prbconv)) }\OperatorTok{>}\StringTok{ }\DecValTok{1}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 10
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{sum}\NormalTok{(crime_data_corr}\OperatorTok{$}\NormalTok{prbpris }\OperatorTok{>}\StringTok{ }\DecValTok{1}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0
+\end{verbatim}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  Some values are coded as levels: prbconv - need to fix Taken care of
+  above
+\end{enumerate}
+
+\subsection{2. Important variables}\label{important-variables}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  What do you want to measure? Make sure you identify variables that
+  will be relevant to the concerns of the political campaign.
+\end{enumerate}
+
+\subsubsection{Important Outcome
+variables}\label{important-outcome-variables}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Crime Rate (``crimrte'')
+\end{enumerate}
+
+\subsubsection{Independent variables}\label{independent-variables}
+
+These are likely important independent variables? 1. Probablity of
+Arrest (``prbarr'') 2. Probability of Conviction (``prbconv'') 3.
+Probability of Going to Prison (``prbpris'')
+
+The assumption here is that crime rate will be lower if the probability
+of getting arrested, convicted or going to prison is higher. Crimes
+happen if criminals believe that they can get away with performing
+crimal acts since the probability of getting punished is lower.
+
+But on the flipside, what really motivates crime? Should we have some of
+those variables in here as primarly independent variables?
+
+\subsubsection{Other key independent
+variables:}\label{other-key-independent-variables}
+
+Should some of these be key independent variables? 1. Police per capita
+(``polpc'') 2. Density (``density'') 3. Tax revenue per capita
+(``taxpc'') 4. Percentage of Young males (``pctymle'') 5. Percentage of
+minorities (``pctmin80'')
+
+Crime rate likely depends on the deterrents to crime: police protection
+But it is likely crime is high if the county is poor or has young
+males/minorities (ex: Oakland?) but not when the county is rich (there
+are people to rob, but then there will be better protection as well like
+security alarms etc).
+
+Is there a proxy for wages? Is it tax revenue per capita? Is that a main
+independent variable?
+
+Here, we might need to do a univariate analsys if these variables
+
+\subsection{3. Transformations}\label{transformations}
+
+Not sure if we have transformations in this section or in the later
+models section:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  What transformations should you apply to each variable? This is very
+  important because transformations can reveal linearities in the data,
+  make our results relevant, or help us meet model assumptions.
+\end{enumerate}
+
+Some inputs from today's post-class session: 1. Use a log transformation
+on crime rate since the values are very small 2. Apply transformations
+in X variables and try to figure out if r.square improves or MSE goes
+down (this requires a model to be built though) 3. There was a
+discussion on Y-transformation which I didn't understand at
+all\ldots{}not sure what that is\ldots{}perhaps week 12 async has it? 4.
+If you apply Y-transformation, apply it universally (Prof said this: not
+sure what it means!)
+
+\subsection{What we are graded on:}\label{what-we-are-graded-on-1}
+
+The Initial EDA. Is the EDA presented in a systematic and transparent
+way? Did the team notice any anomalous values? Is there a sufficient
+justification for any datapoints that are removed? Did the report note
+any coding features that affect the meaning of variables
+(e.g.~top-coding or bottom-coding)? Can you identify anything the team
+could do to improve its understanding or treatment of the data?
+
+\section{3. Models}\label{models}
+
+At a minimum, you should include the following three specifications:
+
+\subsection{Model 1}\label{model-1}
+
+One model with only the explanatory variables of key interest (possibly
+transformed, as determined by your EDA), and no other covariates Things
+to do: - Get list of key explanatory variables - Should we find the
+correlation between them? - Get linear model going for crimerate against
+these variables - Get AIC, r.squared and other key elements of MLR
+
+\subsection{Model 2}\label{model-2}
+
+One model that includes key explanatory variables and only covariates
+that you believe increase the accuracy of your results without
+introducing substantial bias (for example, you should not include
+outcome variables that will absorb some of the causal effect you are
+interested in). This model should strike a balance between accuracy and
+parsimony and reflect your best understanding of the determinants of
+crime.
+
+Things to do: - Get list of key secondary explanatory variables - Find
+correlation with key explanatory variables (is this easy?) - Get linear
+model going for crimerate against these variables - Get AIC, r.squared
+and other key elements of MLR
+
+\subsection{Model 3}\label{model-3}
+
+One model that includes the previous covariates, and most, if not all,
+other covariates. A key purpose of this model is to demonstrate the
+robustness of your results to model specification.
+
+Things to do: - This is the kitchensink where you throw everything in -
+Get linear model going for crimerate against these variables - Get AIC,
+r.squared and other key elements of MLR
+
+Guided by your background knowledge and your EDA, other specifications
+may make sense. You are trying to choose points that encircle the space
+of reasonable modeling choices, to give an overall understanding of how
+these choices impact results.
+
+What we learned from class today: 1. We need to apply transformations
+for sure 2. We need to perform AIC analysis as we add more models. If
+AIC is worse, then the added X value is not very useful 3. Another way
+of figuring out if a model is good is to look at the overall MSE and
+r.square 4. Of the above 4 models, model1 is basic, model2 is a bit more
+elaborate, model3 is the ``kitchen sink''. Model2 is supposed to be the
+optimized one wrt what X variables to use 5. If multi-collinearity is
+violated, the model will blow up and not converge 6. Apparently a lot of
+the model related info is in Week 12 async 7. Watch out for outliers in
+X variables\ldots{}something about not having too much of a
+concentration towards the ends\ldots{} 8. Variance of Beta is dependent
+on 1) sigma\^{}2 2)R-square and 3)SST. Async 12 has more material on
+this
+
+\subsection{What we are graded on:}\label{what-we-are-graded-on-2}
+
+The Model Building Process. Overall, is each step in the model building
+process supported by EDA? Is the outcome variable (or variables)
+appropriate? Did the team consider available variable transformations
+and select them with an eye towards model plausibility and
+interperability? Are transformations used to expose linear relationships
+in scatterplots? Is there enough explanation in the text to understand
+the meaning of each visualization?
+
+\section{4. Regression Table}\label{regression-table}
+
+\subsection{What we need to show:}\label{what-we-need-to-show}
+
+You will display all of your model specifications in a regression table,
+using a package like stargazer to format your output. It should be easy
+for the reader to find the coefficients that represent key effects near
+the top of the regression table, and scan horizontally to see how they
+change from specification to specification. Since we won't cover
+inference for linear regression until unit 12, you should not display
+any standard errors at this point. You should also avoid conducting
+statistical tests for now (but please do point out what tests you think
+would be valuable).
+
+\url{https://www.jakeruss.com/cheatsheets/stargazer/}
+
+\subsection{What we are graded on:}\label{what-we-are-graded-on-3}
+
+The Regression Table. Are the model specifications properly chosen to
+outline the boundary of reasonable choices? Is it easy to find key
+coefficients in the regression table? Does the text include a discussion
+of practical significance for key effects?
+
+\section{5. Omitted Variables
+discussion}\label{omitted-variables-discussion}
+
+Some inputs from class: What we need to discuss is what columns were
+omitted that could help with getting a better model\ldots{}
+
+\subsection{What we need to show:}\label{what-we-need-to-show-1}
+
+After your model building process, you should include a substantial
+discussion of omitted variables. Identify what you think are the 5-10
+most important omitted variables that bias results you care about. For
+each variable, you should estimate what direction the bias is in. If you
+can argue whether the bias is large or small, that is even better. State
+whether you have any variables available that may proxy (even
+imperfectly) for the omitted variable. Pay particular attention to
+whether each omitted variable bias is towards zero or away from zero.
+You will use this information to judge whether the effects you find are
+likely to be real, or whether they might be entirely an artifact of
+omitted variable bias.
+
+\subsection{What we are graded on:}\label{what-we-are-graded-on-4}
+
+The Omitted Variables Discussion. Did the report miss any important
+sources of omitted variable bias? For each omitted variable, is there a
+complete discussion of the direction of bias? Are the estimated
+directions of bias correct? Does the team consider possible proxy
+variables, and if so do you find these choices plausible? Is the
+discussion of omitted variables linked back to the presentation of main
+results? In other words, does the team adequately re-evaluate their
+estimated effects in light of the sources of bias?
+
+\section{6. Conclusion}\label{conclusion}
+
+\subsection{What we are graded on:}\label{what-we-are-graded-on-5}
+
+Does the conclusion address the big-picture concerns that would be at
+the center of a political campaign? Does it raise interesting points
+beyond numerical estimates? Does it place relevant context around the
+results?
+
+
+\end{document}
