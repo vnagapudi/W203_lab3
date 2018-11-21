@@ -19,6 +19,7 @@ Introduction. As you understand it, what is the motivation for this team’s rep
 #2.Initial EDA
 
 ```{r}
+rm(list = ls())
 crime_data = read.csv("crime_v2.csv")
 objects(crime_data)
 ```
@@ -35,11 +36,15 @@ There are 97 of them.
 
 ### Important Outcome variables
 1. Crime Rate ("crimrte")
-2. Probablity of Arrest ("prbarr")
-3. Probability of Conviction ("prbconv")
-4. Probability of Going to Prison ("prbpris")
 
-### Important input variables:
+### Independent variables
+These are likely important independent variables?
+1. Probablity of Arrest ("prbarr")
+2. Probability of Conviction ("prbconv")
+3. Probability of Going to Prison ("prbpris")
+
+### Other key independent variables:
+Should some of these be key independent variables?
 1. Police per capita ("polpc")
 2. Density ("density")
 3. Tax revenue per capita ("taxpc")
@@ -48,6 +53,13 @@ There are 97 of them.
 
 ## 2. Transformations
 2. What transformations should you apply to each variable? This is very important because transformations can reveal linearities in the data, make our results relevant, or help us meet model assumptions.
+
+Some inputs from today's post-class session:
+1. Use a log transformation on crime rate since the values are very small
+2. Apply transformations in X variables and try to figure out if r.square improves or MSE goes down (this requires a model to be built though)
+3. There was a discussion on Y-transformation which I didn't understand at all...not sure what that is...perhaps week 12 async has it?
+4. If you apply Y-transformation, Prof said apply it universally
+
 
 
 ## 3. Data Cleansing
@@ -89,6 +101,17 @@ At a minimum, you should include the following three specifications:
 
 Guided by your background knowledge and your EDA, other specifications may make sense. You are trying to choose points that encircle the space of reasonable modeling choices, to give an overall understanding of how these choices impact results.
 
+What we learned from class today:
+1. We need to apply transformations for sure
+2. We need to perform AIC analysis as we add more models. If AIC is worse, then the added X value is not very useful
+3. Another way of figuring out if a model is good is to look at the overall MSE and r.square 
+4. Of the above 4 models, model1 is basic, model2 is a bit more elaborate, model3 is the "kitchen sink". Model2 is supposed to be the optimized one wrt what X variables to use
+5. If multi-collinearity is violated, the model will blow up and not converge
+6. Apparently a lot of the model related info is in Week 12 async
+7. Watch out for outliers in X variables...something about not having too much of a concentration towards the ends...
+8. Variance of Beta is dependent on 1) sigma^2 2)R-square and 3)SST. Async 12 has more material on this
+
+
 ## What we are graded on:
 The Model Building Process. Overall, is each step in the model building process supported by EDA? Is the outcome variable (or variables) appropriate? Did the team consider available variable transformations and select them with an eye towards model plausibility and interperability? Are transformations used to expose linear relationships in scatterplots? Is there enough explanation in the text to understand the meaning of each visualization?
 
@@ -98,9 +121,12 @@ The Model Building Process. Overall, is each step in the model building process 
 You will display all of your model specifications in a regression table, using a package like stargazer to format your output. It should be easy for the reader to find the coefficients that represent key effects near the top of the regression table, and scan horizontally to see how they change from specification to specification. Since we won’t cover inference for linear regression until unit 12, you should not display any standard errors at this point. You should also avoid conducting statistical tests for now (but please do point out what tests you think would be valuable).
 
 ## What we are graded on:
-The Omitted Variables Discussion. Did the report miss any important sources of omitted variable bias? For each omitted variable, is there a complete discussion of the direction of bias? Are the estimated directions of bias correct? Does the team consider possible proxy variables, and if so do you find these choices plausible? Is the discussion of omitted variables linked back to the presentation of main results? In other words, does the team adequately re-evaluate their estimated effects in light of the sources of bias?
+ The Regression Table. Are the model specifications properly chosen to outline the boundary of reasonable choices? Is it easy to find key coefficients in the regression table? Does the text include a discussion of practical significance for key effects?
 
 #5. Omitted Variables discussion
+
+Some inputs from class: What we need to discuss is what columns were omitted that could help with getting a better model...
+
 
 ## What we need to show:
 After your model building process, you should include a substantial discussion of omitted variables. Identify what you think are the 5-10 most important omitted variables that bias results you care about. For each variable, you should estimate what direction the bias is in. If you can argue whether the bias is large or small, that is even better. State whether you have any variables available that may proxy (even imperfectly) for the omitted variable. Pay particular attention to whether each omitted variable bias is towards zero or away from zero. You will use this information to judge whether the effects you find are likely to be real, or whether they might be entirely an artifact of omitted variable bias.
