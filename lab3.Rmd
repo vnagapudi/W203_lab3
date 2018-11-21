@@ -80,6 +80,7 @@ But it is likely crime is high if the county is poor or has young males/minoriti
 
 Is there a proxy for wages? Is it tax revenue per capita? Is that a main independent variable?
 
+Here, we might need to do a univariate analsys if these variables
 
 ##3. Transformations
 Not sure if we have transformations in this section or in the later models section:
