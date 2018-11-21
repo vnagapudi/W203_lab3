@@ -1,6 +1,6 @@
 ---
 title: "lab3: Reducing Crime"
-author: "Thomas Drage, Venkatesh Nagapudi, Miguel James"
+author: "Thomas Drage, Venkatesh Nagapudi, Miguel Jamie"
 date: "November 20, 2018"
 output: pdf_document
 ---
@@ -119,6 +119,9 @@ The Model Building Process. Overall, is each step in the model building process 
 
 ## What we need to show:
 You will display all of your model specifications in a regression table, using a package like stargazer to format your output. It should be easy for the reader to find the coefficients that represent key effects near the top of the regression table, and scan horizontally to see how they change from specification to specification. Since we won’t cover inference for linear regression until unit 12, you should not display any standard errors at this point. You should also avoid conducting statistical tests for now (but please do point out what tests you think would be valuable).
+
+https://www.jakeruss.com/cheatsheets/stargazer/
+
 
 ## What we are graded on:
  The Regression Table. Are the model specifications properly chosen to outline the boundary of reasonable choices? Is it easy to find key coefficients in the regression table? Does the text include a discussion of practical significance for key effects?
