@@ -31,38 +31,7 @@ length(crime_data$crmrte)
 There are 97 of them.
 
 
-##1. Important variables
-1. What do you want to measure? Make sure you identify variables that will be relevant to the concerns of the political campaign.
-
-### Important Outcome variables
-1. Crime Rate ("crimrte")
-
-### Independent variables
-These are likely important independent variables?
-1. Probablity of Arrest ("prbarr")
-2. Probability of Conviction ("prbconv")
-3. Probability of Going to Prison ("prbpris")
-
-### Other key independent variables:
-Should some of these be key independent variables?
-1. Police per capita ("polpc")
-2. Density ("density")
-3. Tax revenue per capita ("taxpc")
-4. Percentage of Young males ("pctymle")
-5. Percentage of minorities ("pctmin80")
-
-## 2. Transformations
-2. What transformations should you apply to each variable? This is very important because transformations can reveal linearities in the data, make our results relevant, or help us meet model assumptions.
-
-Some inputs from today's post-class session:
-1. Use a log transformation on crime rate since the values are very small
-2. Apply transformations in X variables and try to figure out if r.square improves or MSE goes down (this requires a model to be built though)
-3. There was a discussion on Y-transformation which I didn't understand at all...not sure what that is...perhaps week 12 async has it?
-4. If you apply Y-transformation, Prof said apply it universally
-
-
-
-## 3. Data Cleansing
+## 1. Data Cleansing
 3. Are your choices supported by EDA? You will likely start with some general EDA to detect anomalies (missing values, top-coded variables, etc.). From then on, your EDA should be interspersed with your
 model building. Use visual tools to guide your decisions
 
@@ -81,6 +50,49 @@ sum(crime_data_corr$prbpris > 1)
 3. Some values are coded as levels: prbconv - need to fix
 Taken care of above
 
+
+##2. Important variables
+1. What do you want to measure? Make sure you identify variables that will be relevant to the concerns of the political campaign.
+
+### Important Outcome variables
+1. Crime Rate ("crimrte")
+
+### Independent variables
+These are likely important independent variables?
+1. Probablity of Arrest ("prbarr")
+2. Probability of Conviction ("prbconv")
+3. Probability of Going to Prison ("prbpris")
+
+The assumption here is that crime rate will be lower if the probability of getting arrested, convicted or going to prison is higher. Crimes happen if criminals believe that they can get away with performing crimal acts since the probability of getting punished is lower.
+
+But on the flipside, what really motivates crime? Should we have some of those variables in here as primarly independent variables?
+
+### Other key independent variables:
+Should some of these be key independent variables?
+1. Police per capita ("polpc")
+2. Density ("density")
+3. Tax revenue per capita ("taxpc")
+4. Percentage of Young males ("pctymle")
+5. Percentage of minorities ("pctmin80")
+
+Crime rate likely depends on the deterrents to crime: police protection
+But it is likely crime is high if the county is poor or has young males/minorities (ex: Oakland?) but not when the county is rich (there are people to rob, but then there will be better protection as well like security alarms etc).
+
+Is there a proxy for wages? Is it tax revenue per capita? Is that a main independent variable?
+
+
+##3. Transformations
+Not sure if we have transformations in this section or in the later models section:
+
+2. What transformations should you apply to each variable? This is very important because transformations can reveal linearities in the data, make our results relevant, or help us meet model assumptions.
+
+Some inputs from today's post-class session:
+1. Use a log transformation on crime rate since the values are very small
+2. Apply transformations in X variables and try to figure out if r.square improves or MSE goes down (this requires a model to be built though)
+3. There was a discussion on Y-transformation which I didn't understand at all...not sure what that is...perhaps week 12 async has it?
+4. If you apply Y-transformation, apply it universally (Prof said this: not sure what it means!)
+
+
 ## What we are graded on:
 The Initial EDA. Is the EDA presented in a systematic and transparent way? Did the team notice any anomalous values? Is there a sufficient justification for any datapoints that are removed? Did the report note any coding features that affect the meaning of variables (e.g. top-coding or bottom-coding)? Can you identify anything the team could do to improve its understanding or treatment of the data?
 
@@ -91,13 +103,29 @@ At a minimum, you should include the following three specifications:
 ## Model 1
 
 • One model with only the explanatory variables of key interest (possibly transformed, as determined by your EDA), and no other covariates
+Things to do:
+- Get list of key explanatory variables 
+- Should we find the correlation between them? 
+- Get linear model going for crimerate against these variables
+- Get AIC, r.squared and other key elements of MLR
 
 ## Model 2
 • One model that includes key explanatory variables and only covariates that you believe increase the accuracy of your results without introducing substantial bias (for example, you should not include outcome variables that will absorb some of the causal effect you are interested in). This model should strike a balance between accuracy and parsimony and reflect your best understanding of the determinants of crime.
 
+Things to do:
+- Get list of key secondary explanatory variables
+- Find correlation with key explanatory variables (is this easy?)
+- Get linear model going for crimerate against these variables
+- Get AIC, r.squared and other key elements of MLR
+
 ## Model 3
 
 • One model that includes the previous covariates, and most, if not all, other covariates. A key purpose of this model is to demonstrate the robustness of your results to model specification.
+
+Things to do:
+- This is the kitchensink where you throw everything in
+- Get linear model going for crimerate against these variables
+- Get AIC, r.squared and other key elements of MLR
 
 Guided by your background knowledge and your EDA, other specifications may make sense. You are trying to choose points that encircle the space of reasonable modeling choices, to give an overall understanding of how these choices impact results.
 
@@ -110,6 +138,7 @@ What we learned from class today:
 6. Apparently a lot of the model related info is in Week 12 async
 7. Watch out for outliers in X variables...something about not having too much of a concentration towards the ends...
 8. Variance of Beta is dependent on 1) sigma^2 2)R-square and 3)SST. Async 12 has more material on this
+
 
 
 ## What we are graded on:
