@@ -9,6 +9,7 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 suppressPackageStartupMessages(library(car))
 suppressPackageStartupMessages(library(stargazer))
+suppressPackageStartupMessages(library(sandwich))
 ```
 
 #1. Introduction
@@ -193,7 +194,7 @@ Not sure if we have transformations in this section or in the later models secti
 
 Some inputs from today's post-class session:
 1. Use a log transformation on crime rate since the values are very small
-2. Apply transformations in X variables and try to figure out if r.square improves or MSE goes down (this requires a model to be built though)
+2. Apply transformations in X variables and try to figure out if r.squared improves or MSE goes down (this requires a model to be built though)
 3. There was a discussion on Y-transformation which I didn't understand at all...not sure what that is...perhaps week 12 async has it?
 4. If you apply Y-transformation, apply it universally (Prof said this: not sure what it means!)
 
@@ -219,49 +220,7 @@ hist(crime_data_clean$log_crmrte, breaks = 50,
 ```
 
 ## Justice System Effects
-The data contains several variables related to the potential consequences for a person committing a crime. These are the probabilities of being arrested, convicted, sentenced to prison, and the average length of said sentece. 
 
-Instead of using the variables individually, we will condense them into one, which will incorporate the probabilities of each step as well as the sentence. This variable, which we will call "expected time in prison" or "exp_pris_time", will be obtained by multiplying each probability and the expected average sentence. 
-```{r}
-crime_data_clean["exp_pris_time"] = crime_data_clean$prbarr * crime_data_clean$prbconv_fix * crime_data_clean$prbpris * crime_data_clean$avgsen
-```
-
-The resulting variable is right-skewed, so will then take the log, which yields a more normal distribution, and use that variable going forward. 
-
-```{r}
-hist(crime_data_clean$exp_pris_time, breaks = 30,
-     main = 'Distribution of Expected Prison Time',
-     xlab = 'Expected Prison Time (Days)' )
-
-hist(log(crime_data_clean$exp_pris_time), breaks = 30,
-     main = 'Distribution of Expected Prison Time',
-     xlab = 'Expected Prison Time (Days)' )
-
-crime_data_clean["log_exp_pris_time"] = log(crime_data_clean$exp_pris_time)
-```
-
-By using both log variables (Crime Rate and Expected Prison Time), we get a less heteroskedastic distribution between our variables, as illustrated by the plots below.
-
-```{r}
-
-lm1 = lm(crime_data_clean$crmrte ~ crime_data_clean$exp_pris_time)
-plot(crime_data_clean$exp_pris_time, crime_data_clean$crmrte,
-     main = 'Both Regular')
-abline(lm1)
-summary(lm1)$adj.r.squared
-
-lm2 = lm(crime_data_clean$log_crmrte ~ crime_data_clean$exp_pris_time)
-plot(crime_data_clean$exp_pris_time, crime_data_clean$log_crmrte,
-     main = 'Crime Rate Log')
-abline(lm2)
-summary(lm2)$adj.r.squared
-
-lm3 = lm(crime_data_clean$log_crmrte ~ log(crime_data_clean$exp_pris_time))
-plot(log(crime_data_clean$exp_pris_time), crime_data_clean$log_crmrte,
-     main = 'Both Log')
-abline(lm3)
-summary(lm3)$adj.r.squared
-```
 
 # 4. Regression Modelling
 
@@ -278,7 +237,25 @@ Things to do:
 ```{R, results='asis'}
 model1 = lm(crime_data_clean$crmrte ~ crime_data_clean$prbarr + crime_data_clean$prbconv_fix + crime_data_clean$prbpris + crime_data_clean$avgsen)
 model3 = lm(crime_data_clean$crmrte ~ crime_data_clean$prbarr + crime_data_clean$prbconv_fix + crime_data_clean$prbpris + crime_data_clean$avgsen + crime_data_clean$polpc + crime_data_clean$density + crime_data_clean$taxpc + crime_data_clean$pctmin80 + crime_data_clean$pctymle)
-stargazer(model1, model3,  type = "latex", float=FALSE)
+
+# Using robust errors to compensate for heteroskedasticity
+robust_se <- function(model) {
+  cov <- vcovHC(model)
+  sqrt(diag(cov))
+}
+
+robust_errors <- list(robust_se(model1),
+                      robust_se(model3))
+
+stargazer(model1, model3,
+          se = robust_errors,
+          type = 'text',
+          font.size = 'small')
+
+stargazer(model1, model3,
+          type = "latex",
+          float=FALSE)
+
 ```
 
 ```{R}
@@ -337,3 +314,52 @@ After your model building process, you should include a substantial discussion o
 
 
 
+## Appendix
+[We can delete this, but moving the code for exp_pris_time here just in case we want to keep it to show our work.]
+
+The data contains several variables related to the potential consequences for a person committing a crime. These are the probabilities of being arrested, convicted, sentenced to prison, and the average length of said sentece. 
+
+Instead of using the variables individually, we will condense them into one, which will incorporate the probabilities of each step as well as the sentence. This variable, which we will call "expected time in prison" or "exp_pris_time", will be obtained by multiplying each probability and the expected average sentence. 
+```{r}
+crime_data_clean["exp_pris_time"] = crime_data_clean$prbarr * crime_data_clean$prbconv_fix * crime_data_clean$prbpris * crime_data_clean$avgsen
+```
+
+The resulting variable is right-skewed, so will then take the log, which yields a more normal distribution, and use that variable going forward. 
+
+```{r}
+hist(crime_data_clean$exp_pris_time, breaks = 30,
+     main = 'Distribution of Expected Prison Time',
+     xlab = 'Expected Prison Time (Days)' )
+
+hist(log(crime_data_clean$exp_pris_time), breaks = 30,
+     main = 'Distribution of Log(Expected Prison Time)',
+     xlab = 'Expected Prison Time (Days)' )
+
+crime_data_clean["log_exp_pris_time"] = log(crime_data_clean$exp_pris_time)
+```
+
+By using both log variables (Crime Rate and Expected Prison Time), we get a less heteroskedastic distribution between our variables, as illustrated by the plots below.
+
+```{r}
+
+lm1 = lm(crime_data_clean$crmrte ~ crime_data_clean$exp_pris_time)
+lm2 = lm(crime_data_clean$log_crmrte ~ crime_data_clean$exp_pris_time)
+lm3 = lm(crime_data_clean$log_crmrte ~ log(crime_data_clean$exp_pris_time))
+
+paste("Level - Level: ", summary(lm1)$adj.r.squared)
+paste("Log - Level:", summary(lm2)$adj.r.squared)
+paste('Log - Log:', summary(lm3)$adj.r.squared)
+
+plot(crime_data_clean$exp_pris_time, crime_data_clean$crmrte,
+     main = 'Level - Level')
+abline(lm1)
+
+plot(crime_data_clean$exp_pris_time, crime_data_clean$log_crmrte,
+     main = 'Log - Level')
+abline(lm2)
+
+plot(log(crime_data_clean$exp_pris_time), crime_data_clean$log_crmrte,
+     main = 'Log - Log')
+abline(lm3)
+
+```
