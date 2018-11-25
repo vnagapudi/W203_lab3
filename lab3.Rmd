@@ -9,6 +9,7 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 suppressPackageStartupMessages(library(car))
 suppressPackageStartupMessages(library(stargazer))
+suppressPackageStartupMessages(library(lmtest))
 suppressPackageStartupMessages(library(sandwich))
 ```
 
@@ -194,7 +195,7 @@ Not sure if we have transformations in this section or in the later models secti
 
 Some inputs from today's post-class session:
 1. Use a log transformation on crime rate since the values are very small
-2. Apply transformations in X variables and try to figure out if r.squared improves or MSE goes down (this requires a model to be built though)
+2. Apply transformations in X variables and try to figure out if r.square improves or MSE goes down (this requires a model to be built though)
 3. There was a discussion on Y-transformation which I didn't understand at all...not sure what that is...perhaps week 12 async has it?
 4. If you apply Y-transformation, apply it universally (Prof said this: not sure what it means!)
 
@@ -219,80 +220,110 @@ hist(crime_data_clean$log_crmrte, breaks = 50,
      xlab = 'log(Crime Rate)' )
 ```
 
-## Justice System Effects
-
 
 # 4. Regression Modelling
 
 
-## Model 1
-
- One model with only the explanatory variables of key interest (possibly transformed, as determined by your EDA), and no other covariates
-Things to do:
-- Get list of key explanatory variables 
-- Should we find the correlation between them? 
-- Get linear model going for crimerate against these variables
-- Get AIC, r.squared and other key elements of MLR
+## Model 1 - using the Judicial system variables only
 
 ```{R, results='asis'}
-model1 = lm(crime_data_clean$crmrte ~ crime_data_clean$prbarr + crime_data_clean$prbconv_fix + crime_data_clean$prbpris + crime_data_clean$avgsen)
+model1 = lm(crime_data_clean$crmrte ~ 
+              crime_data_clean$prbarr + 
+              crime_data_clean$prbconv_fix + 
+              crime_data_clean$prbpris + 
+              crime_data_clean$avgsen)
+model1
+```
+
+Plotting the model1 to look at heteroskedasticity, zero conditional mean violation and so on:
+```{r}
+plot(model1)
+```
+Zero conditional mean is violated. The Q-Q plot indicates a good amount of normality. This model is defintiely heteroskedastic from looking at the scalel-location plot.There are no points with Cook's distance > 1 which means that there are no significant outliers.
+
+Looking at a second model that has a log transformation of the crmrte variable:
+
+## Model1_log: Log of crmrte 
+```{R, results='asis'}
+model1_logy = lm(log(crime_data_clean$crmrte) ~ 
+              crime_data_clean$prbarr + 
+              crime_data_clean$prbconv_fix + 
+              crime_data_clean$prbpris + 
+              crime_data_clean$avgsen)
+model1_logy
+```
+```{r}
+plot(model1_logy)
+```
+
+The Q-Q plot got better for sure though it is difficult to see if any of the other ones are better. We can use Stargazer to figure out.
+
+
+## Model3: With all variables
+
+```{r}
 model3 = lm(crime_data_clean$crmrte ~ crime_data_clean$prbarr + crime_data_clean$prbconv_fix + crime_data_clean$prbpris + crime_data_clean$avgsen + crime_data_clean$polpc + crime_data_clean$density + crime_data_clean$taxpc + crime_data_clean$pctmin80 + crime_data_clean$pctymle)
+```
 
-# Using robust errors to compensate for heteroskedasticity
-robust_se <- function(model) {
-  cov <- vcovHC(model)
-  sqrt(diag(cov))
-}
+```{r}
+model3_logy = lm(log(crime_data_clean$crmrte) ~ crime_data_clean$prbarr + crime_data_clean$prbconv_fix + crime_data_clean$prbpris + crime_data_clean$avgsen + crime_data_clean$polpc + crime_data_clean$density + crime_data_clean$taxpc + crime_data_clean$pctmin80 + crime_data_clean$pctymle)
+```
 
-robust_errors <- list(robust_se(model1),
-                      robust_se(model3))
 
-stargazer(model1, model3,
-          se = robust_errors,
-          type = 'text',
-          font.size = 'small')
-
-stargazer(model1, model3,
-          type = "latex",
-          float=FALSE)
-
+```{r}
+stargazer(model1_logy, model3_logy, star.cutoffs = c(0.05,0.01, 0.001), type = "text", float=FALSE)
 ```
 
 ```{R}
-AIC(model1, model3)
+AIC(model1_logy, model3_logy)
 ```
+
+From the above models, it is clear that some of the variables added to the model such as the density, polpc and pctmin80 are definitely improving the model as can be seen above. probconv_fix seems to be getting a lower significance in the model3. Perhaps, it is correlating heavily with other variables and therefore decreasing in significance.
 
 ## Model 2
 
  One model that includes key explanatory variables and only covariates that you believe increase the accuracy of your results without introducing substantial bias (for example, you should not include outcome variables that will absorb some of the causal effect you are interested in). This model should strike a balance between accuracy and parsimony and reflect your best understanding of the determinants of crime.
 
-Things to do:
-- Get list of key secondary explanatory variables
-- Find correlation with key explanatory variables (is this easy?)
-- Get linear model going for crimerate against these variables
-- Get AIC, r.squared and other key elements of MLR
+Let's choose the ones that have the most significance in the stargazer output above. These include:
+1. prbarr
+2. density
+3. pctmin80
+4. polpc
+Creating model2 out of these variables:
 
-## Model 3
+```{r}
+model2 = lm(crime_data_clean$crmrte ~ crime_data_clean$prbarr +  crime_data_clean$density +  log(crime_data_clean$polpc) + crime_data_clean$pctmin80)
+model2_logy = lm(log(crime_data_clean$crmrte) ~ crime_data_clean$prbarr + crime_data_clean$density +  log(crime_data_clean$polpc) + 
+                   crime_data_clean$pctmin80)
+```
 
- One model that includes the previous covariates, and most, if not all, other covariates. A key purpose of this model is to demonstrate the robustness of your results to model specification.
+Let's plot the model2_logy and look at the violations:
+```{r}
+plot(model2_logy)
+```
 
-Things to do:
-- This is the kitchensink where you throw everything in
-- Get linear model going for crimerate against these variables
-- Get AIC, r.squared and other key elements of MLR
+Let's compare all the models now:
 
-Guided by your background knowledge and your EDA, other specifications may make sense. You are trying to choose points that encircle the space of reasonable modeling choices, to give an overall understanding of how these choices impact results.
 
-What we learned from class today:
-1. We need to apply transformations for sure
-2. We need to perform AIC analysis as we add more models. If AIC is worse, then the added X value is not very useful
-3. Another way of figuring out if a model is good is to look at the overall MSE and r.square 
-4. Of the above 4 models, model1 is basic, model2 is a bit more elaborate, model3 is the "kitchen sink". Model2 is supposed to be the optimized one wrt what X variables to use
-5. If multi-collinearity is violated, the model will blow up and not converge
-6. Apparently a lot of the model related info is in Week 12 async
-7. Watch out for outliers in X variables...something about not having too much of a concentration towards the ends...
-8. Variance of Beta is dependent on 1) sigma^2 2)R-square and 3)SST. Async 12 has more material on this
 
+```{r}
+#Since models are heteroskedastic, need to use heteroskedastic-robust SEs
+se.model1_logy = sqrt(diag(vcovHC(model1_logy)))
+se.model2_logy = sqrt(diag(vcovHC(model2_logy)))
+se.model3_logy = sqrt(diag(vcovHC(model3_logy)))
+stargazer(model1_logy, model2_logy, model3_logy, 
+          se = list(se.model1_logy, se.model2_logy, se.model3_logy),
+          star.cutoffs = c(0.05,0.01, 0.001), 
+          type = "text", 
+          float=FALSE)
+```
+
+```{r}
+AIC(model1_logy, model2_logy, model3_logy)
+#AIC(model1, model2, model3)
+```
+
+As we can see above, the AIC as well as the standard errors seem to be the best for model2. The addition of more variables really didn't help much as we go from model2 to model3. 
 
 # 5. Discussion - Model Specification & Omitted Variables
 
@@ -311,8 +342,6 @@ It is likely that crime rate will be heavily influenced by the following omitted
 After your model building process, you should include a substantial discussion of omitted variables. Identify what you think are the 5-10 most important omitted variables that bias results you care about. For each variable, you should estimate what direction the bias is in. If you can argue whether the bias is large or small, that is even better. State whether you have any variables available that may proxy (even imperfectly) for the omitted variable. Pay particular attention to whether each omitted variable bias is towards zero or away from zero. You will use this information to judge whether the effects you find are likely to be real, or whether they might be entirely an artifact of omitted variable bias.
 
 #6. Conclusion
-
-
 
 ## Appendix
 [We can delete this, but moving the code for exp_pris_time here just in case we want to keep it to show our work.]
@@ -363,3 +392,4 @@ plot(log(crime_data_clean$exp_pris_time), crime_data_clean$log_crmrte,
 abline(lm3)
 
 ```
+
