@@ -13,12 +13,12 @@ suppressPackageStartupMessages(library(stargazer))
 
 #1. Introduction
 
-This research is aimed at understanding the determinants of crime and generate policy suggestions that are applicable to the local government. The study aims at finding out how different factors affect the crime rate ("crmrte") and what kind of policies can lead to lower crime rates.
+This statistical investigation is aimed at understanding the determinants of crime in order to generate policy suggestions that are applicable to the local government. The study is based upon development of causal models for crime rate, based on county level demographic and judicial data for 1987. We have identified factors which modify the rate and extended this to the development of policy proposals for a new government.
 
 ## What we are graded on:
 Introduction. As you understand it, what is the motivation for this team's report? Does the introduction as written make the motivation easy to understand? Is the analysis well-motivated? Note that we're not necessarily expecting a long introduction. Even a single paragraph is probably enough for most reports.
 
-#2.Initial EDA
+# 2. Review of Source Data
 
 ```{r}
 rm(list = ls())
@@ -32,11 +32,7 @@ str(crime_data)
 ```
 There are 97 of them.
 
-
-## 1. Data Cleansing
-3. Are your choices supported by EDA? You will likely start with some general EDA to detect anomalies (missing values, top-coded variables, etc.). From then on, your EDA should be interspersed with your
-model building. Use visual tools to guide your decisions
-
+## Data Cleansing
 
 1. Removing NA in some cases
 ```{r}
@@ -80,36 +76,27 @@ Once data cleaning is complete, creating a working copy of our data
 crime_data_clean = crime_data_corr3
 ```
 
-##2. Important variables
+# 3. Identification of Key Variables
 
-### Important Outcome variables
-1. Crime Rate ("crimrte")
+### Dependent Variable
 
-Summarizing the variable
+The crime rate ("crmrte") is the key dependent variable in this study and represents the number of crimes committed per person in the each county. 
+
+Summarizing the variable we note a small range of fractional values, centred on a mean of approximately 3.5 crimes per hundred people in the year period.
 ```{r}
 summary(crime_data_clean$crmrte)
 ```
 
-Looking at the histogram to look at the distribution of this key variable:
+The distribution of crime rate is somewhat left-skewed in this dataset but sufficient data is available for modelling.
 ```{r}
-hist(crime_data_clean$crmrte, breaks = 50,
+hist(crime_data_clean$crmrte, breaks = 30,
      main = 'Histogram of Crime Rate',
      xlab = 'Crime Rate' )
 ```
 
-There is defintely a positive skew here. As with most rates, it might be useful to look at the log to see if it is a bit more normal.
 
-```{r}
-hist(log(crime_data_clean$crmrte), breaks = 50,
-     main = 'Histogram of log(Crime Rate)',
-     xlab = 'log(Crime Rate)' )
-```
+### Independent Variables - Judicial
 
-This is definitely looking more normal than the original variable.
-
-
-### Independent variables
-These are likely important independent variables?
 1. Probablity of Arrest ("prbarr")
 2. Probability of Conviction ("prbconv")
 3. Probability of Going to Prison ("prbpris")
@@ -124,7 +111,7 @@ As we can see, the log(crimrte) seems to be negatively correlated with prbarr an
 
 But on the flipside, what really motivates or prevents crime? Should we have some of those variables in here as primarly independent variables?
 
-### Other key independent variables:
+### Idependent Variables - Demographic
 Should some of these be key independent variables?
 1. Police per capita ("polpc")
 2. Density ("density")
@@ -199,10 +186,7 @@ There is a small correlation here. But it is unclear as to whether there will be
 scatterplotMatrix(~ log(crmrte) + avgsen, data=crime_data_clean)
 ```
 
-## What we are graded on:
-The Initial EDA. Is the EDA presented in a systematic and transparent way? Did the team notice any anomalous values? Is there a sufficient justification for any datapoints that are removed? Did the report note any coding features that affect the meaning of variables (e.g. top-coding or bottom-coding)? Can you identify anything the team could do to improve its understanding or treatment of the data?
-
-##3. Transformations
+# 3. Data Transformation
 Not sure if we have transformations in this section or in the later models section:
 
 2. What transformations should you apply to each variable? This is very important because transformations can reveal linearities in the data, make our results relevant, or help us meet model assumptions.
@@ -223,7 +207,6 @@ hist(crime_data_clean$crmrte, breaks = 50,
      main = 'Histogram of Crime Rate',
      xlab = 'Crime Rate' )
 ```
-
 
 As a result, we will apply a log() transformation to the variable, which will address both issues. This transformation will change our interpretation as well, since the result will need to be interrpeted as a percentage change for Crime Rate.. 
 
@@ -261,22 +244,27 @@ By using both log variables (Crime Rate and Expected Prison Time), we get a less
 
 ```{r}
 
+lm1 = lm(crime_data_clean$crmrte ~ crime_data_clean$exp_pris_time)
 plot(crime_data_clean$exp_pris_time, crime_data_clean$crmrte,
      main = 'Both Regular')
-abline(lm(crime_data_clean$crmrte ~ crime_data_clean$exp_pris_time))
+abline(lm1)
+summary(lm1)$adj.r.squared
 
+lm2 = lm(crime_data_clean$log_crmrte ~ crime_data_clean$exp_pris_time)
 plot(crime_data_clean$exp_pris_time, crime_data_clean$log_crmrte,
      main = 'Crime Rate Log')
-abline(lm(crime_data_clean$log_crmrte ~ crime_data_clean$exp_pris_time))
+abline(lm2)
+summary(lm2)$adj.r.squared
 
+lm3 = lm(crime_data_clean$log_crmrte ~ log(crime_data_clean$exp_pris_time))
 plot(log(crime_data_clean$exp_pris_time), crime_data_clean$log_crmrte,
      main = 'Both Log')
-abline(lm(crime_data_clean$log_crmrte ~ log(crime_data_clean$exp_pris_time)))
-```
+abline(lm3)
+summary(lm3)$adj.r.squared
 ```
 
-#3. Models
-At a minimum, you should include the following three specifications:
+# 4. Regression Modelling
+
 
 ## Model 1
 
@@ -287,7 +275,18 @@ Things to do:
 - Get linear model going for crimerate against these variables
 - Get AIC, r.squared and other key elements of MLR
 
+```{R, results='asis'}
+model1 = lm(crime_data_clean$crmrte ~ crime_data_clean$prbarr + crime_data_clean$prbconv_fix + crime_data_clean$prbpris + crime_data_clean$avgsen)
+model3 = lm(crime_data_clean$crmrte ~ crime_data_clean$prbarr + crime_data_clean$prbconv_fix + crime_data_clean$prbpris + crime_data_clean$avgsen + crime_data_clean$polpc + crime_data_clean$density + crime_data_clean$taxpc + crime_data_clean$pctmin80 + crime_data_clean$pctymle)
+stargazer(model1, model3,  type = "latex", float=FALSE)
+```
+
+```{R}
+AIC(model1, model3)
+```
+
 ## Model 2
+
  One model that includes key explanatory variables and only covariates that you believe increase the accuracy of your results without introducing substantial bias (for example, you should not include outcome variables that will absorb some of the causal effect you are interested in). This model should strike a balance between accuracy and parsimony and reflect your best understanding of the determinants of crime.
 
 Things to do:
@@ -318,22 +317,7 @@ What we learned from class today:
 8. Variance of Beta is dependent on 1) sigma^2 2)R-square and 3)SST. Async 12 has more material on this
 
 
-
-## What we are graded on:
-The Model Building Process. Overall, is each step in the model building process supported by EDA? Is the outcome variable (or variables) appropriate? Did the team consider available variable transformations and select them with an eye towards model plausibility and interperability? Are transformations used to expose linear relationships in scatterplots? Is there enough explanation in the text to understand the meaning of each visualization?
-
-#4. Regression Table
-
-## What we need to show:
-You will display all of your model specifications in a regression table, using a package like stargazer to format your output. It should be easy for the reader to find the coefficients that represent key effects near the top of the regression table, and scan horizontally to see how they change from specification to specification. Since we won't cover inference for linear regression until unit 12, you should not display any standard errors at this point. You should also avoid conducting statistical tests for now (but please do point out what tests you think would be valuable).
-
-https://www.jakeruss.com/cheatsheets/stargazer/
-
-
-## What we are graded on:
- The Regression Table. Are the model specifications properly chosen to outline the boundary of reasonable choices? Is it easy to find key coefficients in the regression table? Does the text include a discussion of practical significance for key effects?
-
-#5. Omitted Variables discussion
+# 5. Discussion - Model Specification & Omitted Variables
 
 Some inputs from class: What we need to discuss is what columns were omitted that could help with getting a better model...
 
@@ -349,11 +333,7 @@ It is likely that crime rate will be heavily influenced by the following omitted
 ## What we need to show:
 After your model building process, you should include a substantial discussion of omitted variables. Identify what you think are the 5-10 most important omitted variables that bias results you care about. For each variable, you should estimate what direction the bias is in. If you can argue whether the bias is large or small, that is even better. State whether you have any variables available that may proxy (even imperfectly) for the omitted variable. Pay particular attention to whether each omitted variable bias is towards zero or away from zero. You will use this information to judge whether the effects you find are likely to be real, or whether they might be entirely an artifact of omitted variable bias.
 
-## What we are graded on:
-The Omitted Variables Discussion. Did the report miss any important sources of omitted variable bias? For each omitted variable, is there a complete discussion of the direction of bias? Are the estimated directions of bias correct? Does the team consider possible proxy variables, and if so do you find these choices plausible? Is the discussion of omitted variables linked back to the presentation of main results? In other words, does the team adequately re-evaluate their estimated effects in light of the sources of bias?
-
 #6. Conclusion
 
-## What we are graded on:
-Does the conclusion address the big-picture concerns that would be at the center of a political campaign? Does it raise interesting points beyond numerical estimates? Does it place relevant context around the results?
+
 
