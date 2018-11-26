@@ -71,11 +71,18 @@ crime_data_corr2[crime_data_corr2$county == 193, 1:6]
 crime_data_corr3 = crime_data_corr2[!duplicated(crime_data_corr2), ]
 ```
 
-Now there are only 80 observerations which is less than 100. So we do need to be careful our assumptions around CLM for coefficients being normal.
+5. There is a density value of 0.0002 - this is approximately one person in an area the size of Alabama and presumably a measurement error. Therefore, we also remove this record from the dataset.
+
+```{r}
+good_density = (crime_data_corr3$density > 0.001)
+crime_data_corr4 = subset(crime_data_corr3, good_density)
+```
+
+Now there are only 79 observerations which is less than 100. So we do need to be careful our assumptions around CLM for coefficients being normal.
 
 Once data cleaning is complete, creating a working copy of our data
 ```{r}
-crime_data_clean = crime_data_corr3
+crime_data_clean = crime_data_corr4
 ```
 
 # 3. Identification of Key Variables
@@ -109,12 +116,10 @@ Let's look at the scatterplot matrix for a relationship with crmrte
 ```{r}
 scatterplotMatrix(~ log(crmrte) + prbarr +  prbconv_fix + prbpris, data=crime_data_clean)
 ```
-As we can see, the log(crimrte) seems to be negatively correlated with prbarr and prbconv_fix which seems to be intuitive. There is perhaps a positive correlation to prbpris, which is not very intuitive. 
 
-But on the flipside, what really motivates or prevents crime? Should we have some of those variables in here as primarly independent variables?
+As we can see, the log(crimrte) seems to be negatively correlated with prbarr and prbconv_fix which seems to be intuitive. There is perhaps a positive correlation to prbpris, which is not very intuitive, but the direction of the correlation is not clear from the dataset and therefore we exclude this from our key variable set.
 
-### Idependent Variables - Demographic
-Should some of these be key independent variables?
+### Independent Variables - Demographic
 1. Police per capita ("polpc")
 2. Density ("density")
 3. Tax revenue per capita ("taxpc")
@@ -141,6 +146,10 @@ cor(crime_data_clean$crmrte,crime_data_clean$density)
 hist(crime_data_clean$density, breaks = 50,
      main = 'Histogram of Density',
      xlab = 'Density' )
+```
+
+```{R}
+scatterplotMatrix(~ log(crime_data_clean$crmrte) + crime_data_clean$density + log(crime_data_clean$density))
 ```
 
 The Taxpc is a proxy for how rich a county is. It is likely that the higher the tax paid, the more likely that the people are, on average, richer. On one hand, richer counties might be a more attractive target for property crime. On the other hand, people in this counties have less of an economic incentive to commit crime, and are likely to have better security measures than less rich counties.
@@ -243,35 +252,15 @@ plot(model1)
 ```
 Zero conditional mean is violated. The Q-Q plot indicates a good amount of normality. This model is defintiely heteroskedastic from looking at the scalel-location plot.There are no points with Cook's distance > 1 which means that there are no significant outliers.
 
-## Model3: With all variables
-
-```{r}
-model3 = lm(crime_data_clean$log_crmrte ~ 
-              crime_data_clean$prbarr + 
-              crime_data_clean$prbconv_fix + 
-              crime_data_clean$prbpris + 
-              crime_data_clean$avgsen + 
-              crime_data_clean$polpc + 
-              crime_data_clean$density + 
-              crime_data_clean$taxpc + 
-              crime_data_clean$pctmin80 + 
-              crime_data_clean$pctymle)
-```
 
 
-```{r}
-stargazer(model1, model3, star.cutoffs = c(0.05,0.01, 0.001), type = "text", float=FALSE)
-```
 
-```{R}
-AIC(model1, model3)
-```
-
-From the above models, it is clear that some of the variables added to the model such as the density, polpc and pctmin80 are definitely improving the model as can be seen above. probconv_fix seems to be getting a lower significance in the model3. Perhaps, it is correlating heavily with other variables and therefore decreasing in significance.
 
 ## Model 2
 
  One model that includes key explanatory variables and only covariates that you believe increase the accuracy of your results without introducing substantial bias (for example, you should not include outcome variables that will absorb some of the causal effect you are interested in). This model should strike a balance between accuracy and parsimony and reflect your best understanding of the determinants of crime.
+
+From the above models, it is clear that some of the variables added to the model such as the density, polpc and pctmin80 are definitely improving the model as can be seen above. probconv_fix seems to be getting a lower significance in the model3. Perhaps, it is correlating heavily with other variables and therefore decreasing in significance.
 
 Let's choose the ones that have the most significance in the stargazer output above. These include:
 1. prbarr
@@ -283,7 +272,7 @@ Creating model2 out of these variables:
 ```{r}
 model2 = lm(crime_data_clean$log_crmrte ~ 
               crime_data_clean$prbarr +  
-              crime_data_clean$density +  
+              log(crime_data_clean$density) +  
               log(crime_data_clean$polpc) + 
               crime_data_clean$pctmin80)
 ```
@@ -291,6 +280,26 @@ model2 = lm(crime_data_clean$log_crmrte ~
 Let's plot the model2 and look at the our assumptions:
 ```{r}
 plot(model2)
+```
+
+## Model3: With all variables
+
+```{r}
+model3 = lm(crime_data_clean$log_crmrte ~ 
+              crime_data_clean$prbarr + 
+              crime_data_clean$prbconv_fix + 
+              crime_data_clean$prbpris + 
+              crime_data_clean$avgsen + 
+              crime_data_clean$polpc + 
+              log(crime_data_clean$density) + 
+              crime_data_clean$taxpc + 
+              crime_data_clean$pctmin80 + 
+              crime_data_clean$pctymle)
+```
+
+
+```{r}
+stargazer(model1, model3, star.cutoffs = c(0.05,0.01, 0.001), type = "text", float=FALSE)
 ```
 
 Let's compare all the models now:
