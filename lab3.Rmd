@@ -3,6 +3,7 @@ title: "W203 Lab 3: Reducing Crime by Regression Analysis"
 author: "Thomas Drage, Venkatesh Nagapudi, Miguel Jamie"
 date: "November 2018"
 output: pdf_document
+  
 
 ---
 
@@ -304,10 +305,15 @@ As we can see, model3 has significanlty improved on the AIC, R2 and Residual SE,
 From the above models, it is clear that some of the variables added to the model such as the density, polpc and pctmin80 are definitely improving the model as can be seen above. probconv_fix seems to be getting a lower significance in the model3. Perhaps, it is correlating heavily with other variables and therefore decreasing in significance.
 
 Let's choose the ones that have the most significance in the stargazer output above. These include:
+
 1. prbarr
+
 2. density
+
 3. pctmin80
+
 4. polpc
+
 Creating model2 out of these variables:
 
 ```{r}
@@ -351,9 +357,13 @@ AIC(model1, model2, model3)
 ```
 
 Model2 definitely is an great improvement over Model1 with a better AIC, a much better R2 and lower Residual SE. Importantly Model2 improves over Model3 in several areas including:
+
 - Residuals vs Fitted plot shows that it is pretty close to satisfying the zero conditional mean requirement.
+
 - The Q-Q plot is more normal than Model3. So the coefficients are more robust. We see that the p-values are all very significant unlike Model3's p-values showing that the coefficients are more consistent
+
 - There are no major outliers in the residuals vs leverage plot unlike Model3.
+
 
 
 #5. Discussion - Model Specification & Omitted Variables
