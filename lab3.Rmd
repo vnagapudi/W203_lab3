@@ -21,9 +21,6 @@ suppressPackageStartupMessages(library(QuantPsyc))
 
 This statistical investigation is aimed at understanding the determinants of crime in order to generate policy suggestions that are applicable to the local government. The study is based upon development of causal models for crime rate, based on county level demographic and judicial data for 1987. We have identified factors which modify the rate and extended this to the development of policy proposals for a new government.
 
-## What we are graded on:
-Introduction. As you understand it, what is the motivation for this team's report? Does the introduction as written make the motivation easy to understand? Is the analysis well-motivated? Note that we're not necessarily expecting a long introduction. Even a single paragraph is probably enough for most reports.
-
 # 2. Review of Source Data
 
 ```{r}
@@ -40,25 +37,27 @@ There are 97 of them.
 
 ## Data Cleansing
 
-1. Removing NA in some cases
+Initially, it was necessary to examine the data and remove values which were clearly the result of measurement or recording error and ensure that the formatting of the dataset was consistent and able to be processed.
+
+1. First, "NA" data is removed in some cases.
 ```{r}
 crime_data_corr = na.omit(crime_data)
 ```
 
-2. Some values are coded as levels: prbconv - need to fix
+2. prbconv was coded as a factor of levels - this is converted to numeric data.
 ```{r}
 crime_data_corr$prbconv_fix = as.numeric(as.character(crime_data_corr$prbconv))
 summary(crime_data_corr$prbconv_fix)
 ```
 
-3. Probability values > 1 in some cases. There are 11 such values. Perhaps we have to leave these rows out.
+3. Probability values are > 1 in some cases. 
 ```{r}
 sum(crime_data_corr$prbarr > 1)
 sum(crime_data_corr$prbconv_fix > 1)
 sum(crime_data_corr$prbpris > 1)
 ```
 
-Eliminate the above points from the data set
+There are 11 such values, which we remove as they indicate faulty data.
 ```{r}
 good_prob_cond =
    !((crime_data_corr$prbarr > 1) | 
@@ -82,9 +81,7 @@ good_density = (crime_data_corr3$density > 0.001)
 crime_data_corr4 = subset(crime_data_corr3, good_density)
 ```
 
-Now there are only 79 observerations which is less than 100. So we do need to be careful our assumptions around CLM for coefficients being normal.
-
-Once data cleaning is complete, creating a working copy of our data
+After cleansing we have 79 records, which we store as our master dataset.
 ```{r}
 crime_data_clean = crime_data_corr4
 ```
@@ -115,14 +112,13 @@ hist(crime_data_clean$crmrte, breaks = 30,
 3. Probability of Going to Prison ("prbpris")
 4. Average Sentence ("avgsen")
 
-The assumption here is that crime rate will be lower if the probability of getting arrested, convicted or going to prison is higher. Crimes happen if criminals believe that they can get away with performing crimal acts since the probability of getting punished is lower.
+It is likely that the crime rate will be lower where the probability of getting arrested, convicted or going to prison is higher due to the deterrent effect. These variables are expected to have causal relationships with crime rate ("crmrte") and should reveal correlation, which we examine through a scatterplot matrix:
 
-Let's look at the scatterplot matrix for a relationship with crmrte
 ```{r}
 scatterplotMatrix(~ log(crmrte) + prbarr +  prbconv_fix + prbpris, data=crime_data_clean)
 ```
 
-As we can see, the log(crimrte) seems to be negatively correlated with prbarr and prbconv_fix which seems to be intuitive. There is perhaps a positive correlation to prbpris, which is not very intuitive, but the direction of the correlation is not clear from the dataset and therefore we exclude this from our key variable set.
+As we can see, the log(crmrte) seems to be negatively correlated with prbarr and prbconv_fix which is intuitive. There is perhaps a positive correlation to prbpris, the probability of prison sentencing, which is not very intuitive, but the direction of the correlation is not clear from the dataset and therefore we exclude this from our key variable set.
 
 Finally looking at avgsen,
 ```{r}
@@ -141,35 +137,32 @@ scatterplotMatrix(~ log(crmrte) + avgsen, data=crime_data_clean)
 3. Tax revenue per capita ("taxpc")
 4. Percentage of Young males ("pctymle")
 5. Percentage of minorities ("pctmin80")
-6. Average sentence ("avgsen")
 
-Crime rate likely depends on the deterrents to crime: police protection
-But it is likely crime is high if the county is poor or has young males/minorities (ex: Oakland?) but not when the county is rich (there are people to rob, but then there will be better protection as well like security alarms etc).
+The second set of independent variables identified are demographic factors which may lead to changes in crime rate, typically in relation to the affluence of the county. Note however, that given the data is collected at county level these represent an average and any one county may contain urban or sub-urban and rich or poor areas with varying rates and types of crime which are not seen in this dataset.
 
 #### Policing / Density / Tax Revenue
 
-Performing a couple of different scatterplots
+Initially we can examine the effect of police staffing, population density and the tax revenue:
 ```{r}
 scatterplotMatrix(~ log(crmrte) + polpc +  density + taxpc, data=crime_data_clean)
 ```
 Crime Rate seems to be positively correlated to the "Police per capita". If we consider police staffing as a lagging indicator, this is intuitive: where Crime Rate is high, more police officers will be deployed. This would be an inverse causal relationship.
 
-Looking at population density, there is a positive correlation between crime and density. This seems intuitive. However, the density distribution is not very normal, and might need a transformation.
+Looking at population density, there is a positive correlation between crime and density which is not unexpected given high density housing is often associated with lesser affluence and social issues. However, the density distribution is not very normal, and might need a transformation.
 
 ```{r}
 summary(crime_data_clean$density)
 cor(crime_data_clean$crmrte,crime_data_clean$density)
 ```
 
-
-The Taxpc is a proxy for how rich a county is. It is likely that the higher the tax paid, the more likely that the people are, on average, richer. On one hand, richer counties might be a more attractive target for property crime. On the other hand, people in this counties have less of an economic incentive to commit crime, and are likely to have better security measures than less rich counties.
+The "taxpc" variable, tax revenue per capita, can be considered a proxy for how rich a county is. It is likely that the higher the tax paid, the more likely that the people are, on average, richer. On one hand, richer counties might be a more attractive target for property crime. On the other hand, people in this counties have less of an economic incentive to commit crime, and are likely to have better security measures than less rich counties.
 
 ```{r}
 summary(crime_data_clean$taxpc)
 cor(crime_data_clean$crmrte, crime_data_clean$taxpc)
 ```
 
-Look at the correlation, we see a positive correlation between taxpc and crime rate. However, the distribution of taxpc is not very optimal and we do need to watch out for outliers creating a lot of leverage and influence.
+Look at the correlation, we see a positive correlation between taxpc and crime rate. However, the distribution of taxpc is not very optimal and we may need to examine outliers closely if this is used in modelling.
 
 ```{r}
 hist(crime_data_clean$taxpc, breaks = 50,
@@ -179,13 +172,13 @@ hist(crime_data_clean$taxpc, breaks = 50,
 
 #### Minorities and Youth
 
-Examining the relationship between pctymle and pctmin80 with crmrte:
+Here we examine the relationship between "pctymle", the proportion of young males and "pctmin80", the percentage of minority population with the logarithm of crime rate:
 
 ```{r}
 scatterplotMatrix(~ log(crmrte) + pctymle +  pctmin80, data=crime_data_clean)
 ```
 
-The crime rate is higher in places with more % of young males. This seems somewhat likely.  The crime rate is higher generally when minority % is higher. However, both variables seem to have non-ideal distributions.
+The crime rate is higher in places with more % of young males, given traditional stereotypes this appears reasonable. The crime rate is higher generally when minority % is higher. However, both variables seem to have non-ideal distributions.
 
 Looking at the correlation between the variables:
 ```{r}
@@ -194,9 +187,7 @@ cor(crime_data_clean$crmrte,crime_data_clean$pctymle)
 summary(crime_data_clean$pctmin80)
 cor(crime_data_clean$crmrte,crime_data_clean$pctmin80)
 ```
-The correlation is not very high though.
-
-
+The correlation is weak in both cases.
 
 # 3. Data Transformation
 Not sure if we have transformations in this section or in the later models section:
