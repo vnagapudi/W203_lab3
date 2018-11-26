@@ -246,7 +246,7 @@ Zero conditional mean is violated. The Q-Q plot indicates a good amount of norma
 ## Model3: With all variables
 
 ```{r}
-model3 = lm(crime_data_clean$crmrte ~ 
+model3 = lm(crime_data_clean$log_crmrte ~ 
               crime_data_clean$prbarr + 
               crime_data_clean$prbconv_fix + 
               crime_data_clean$prbpris + 
@@ -281,7 +281,7 @@ Let's choose the ones that have the most significance in the stargazer output ab
 Creating model2 out of these variables:
 
 ```{r}
-model2 = lm(crime_data_clean$crmrte ~ 
+model2 = lm(crime_data_clean$log_crmrte ~ 
               crime_data_clean$prbarr +  
               crime_data_clean$density +  
               log(crime_data_clean$polpc) + 
