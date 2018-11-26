@@ -1,8 +1,11 @@
 ---
-title: "lab3: Reducing Crime"
+title: "W203 Lab 3: Reducing Crime by Regression Analysis"
 author: "Thomas Drage, Venkatesh Nagapudi, Miguel Jamie"
-date: "November 20, 2018"
-output: pdf_document
+date: "November 2018"
+output:
+  pdf_document: 
+    fig_height: 3.25
+    fig_width: 4.5
 ---
 
 ```{r setup, include=FALSE}
@@ -11,6 +14,7 @@ suppressPackageStartupMessages(library(car))
 suppressPackageStartupMessages(library(stargazer))
 suppressPackageStartupMessages(library(lmtest))
 suppressPackageStartupMessages(library(sandwich))
+suppressPackageStartupMessages(library(QuantPsyc))
 ```
 
 #1. Introduction
@@ -109,6 +113,7 @@ hist(crime_data_clean$crmrte, breaks = 30,
 1. Probablity of Arrest ("prbarr")
 2. Probability of Conviction ("prbconv")
 3. Probability of Going to Prison ("prbpris")
+4. Average Sentence ("avgsen")
 
 The assumption here is that crime rate will be lower if the probability of getting arrested, convicted or going to prison is higher. Crimes happen if criminals believe that they can get away with performing crimal acts since the probability of getting punished is lower.
 
@@ -118,6 +123,17 @@ scatterplotMatrix(~ log(crmrte) + prbarr +  prbconv_fix + prbpris, data=crime_da
 ```
 
 As we can see, the log(crimrte) seems to be negatively correlated with prbarr and prbconv_fix which seems to be intuitive. There is perhaps a positive correlation to prbpris, which is not very intuitive, but the direction of the correlation is not clear from the dataset and therefore we exclude this from our key variable set.
+
+Finally looking at avgsen,
+```{r}
+summary(crime_data_clean$avgsen)
+cor(crime_data_clean$crmrte,crime_data_clean$avgsen )
+```
+There is a small correlation here. But it is unclear as to whether there will be a causal relationship and which way it would be directed. 
+
+```{r}
+scatterplotMatrix(~ log(crmrte) + avgsen, data=crime_data_clean)
+```
 
 ### Independent Variables - Demographic
 1. Police per capita ("polpc")
@@ -129,6 +145,8 @@ As we can see, the log(crimrte) seems to be negatively correlated with prbarr an
 
 Crime rate likely depends on the deterrents to crime: police protection
 But it is likely crime is high if the county is poor or has young males/minorities (ex: Oakland?) but not when the county is rich (there are people to rob, but then there will be better protection as well like security alarms etc).
+
+#### Policing / Density / Tax Revenue
 
 Performing a couple of different scatterplots
 ```{r}
@@ -142,15 +160,7 @@ Looking at population density, there is a positive correlation between crime and
 summary(crime_data_clean$density)
 cor(crime_data_clean$crmrte,crime_data_clean$density)
 ```
-```{r}
-hist(crime_data_clean$density, breaks = 50,
-     main = 'Histogram of Density',
-     xlab = 'Density' )
-```
 
-```{R}
-scatterplotMatrix(~ log(crime_data_clean$crmrte) + crime_data_clean$density + log(crime_data_clean$density))
-```
 
 The Taxpc is a proxy for how rich a county is. It is likely that the higher the tax paid, the more likely that the people are, on average, richer. On one hand, richer counties might be a more attractive target for property crime. On the other hand, people in this counties have less of an economic incentive to commit crime, and are likely to have better security measures than less rich counties.
 
@@ -167,6 +177,8 @@ hist(crime_data_clean$taxpc, breaks = 50,
      xlab = 'Tax Revenue Per Capita' )
 ```
 
+#### Minorities and Youth
+
 Examining the relationship between pctymle and pctmin80 with crmrte:
 
 ```{r}
@@ -174,8 +186,6 @@ scatterplotMatrix(~ log(crmrte) + pctymle +  pctmin80, data=crime_data_clean)
 ```
 
 The crime rate is higher in places with more % of young males. This seems somewhat likely.  The crime rate is higher generally when minority % is higher. However, both variables seem to have non-ideal distributions.
-
-(NOTE(miguel): seemscorrelation is not very high, but it might still be important, IMO.)
 
 Looking at the correlation between the variables:
 ```{r}
@@ -186,16 +196,7 @@ cor(crime_data_clean$crmrte,crime_data_clean$pctmin80)
 ```
 The correlation is not very high though.
 
-Finally looking at avgsen,
-```{r}
-summary(crime_data_clean$avgsen)
-cor(crime_data_clean$crmrte,crime_data_clean$avgsen )
-```
-There is a small correlation here. But it is unclear as to whether there will be a causal relationship and which way it would be directed. 
 
-```{r}
-scatterplotMatrix(~ log(crmrte) + avgsen, data=crime_data_clean)
-```
 
 # 3. Data Transformation
 Not sure if we have transformations in this section or in the later models section:
@@ -231,6 +232,17 @@ hist(crime_data_clean$log_crmrte, breaks = 50,
      xlab = 'log(Crime Rate)' )
 ```
 
+## Density 
+
+```{r}
+hist(crime_data_clean$density, breaks = 30,
+     main = 'Histogram of Density',
+     xlab = 'Density' )
+```
+
+```{R}
+scatterplotMatrix(~ log(crime_data_clean$crmrte) + crime_data_clean$density + log(crime_data_clean$density))
+```
 
 # 4. Regression Modelling
 
@@ -273,7 +285,9 @@ Creating model2 out of these variables:
 model2 = lm(crime_data_clean$log_crmrte ~ 
               crime_data_clean$prbarr +  
               log(crime_data_clean$density) +  
-              log(crime_data_clean$polpc) + 
+              crime_data_clean$polpc + 
+              crime_data_clean$taxpc +
+              crime_data_clean$prbconv_fix +
               crime_data_clean$pctmin80)
 ```
 
@@ -300,6 +314,10 @@ model3 = lm(crime_data_clean$log_crmrte ~
 
 ```{r}
 stargazer(model1, model3, star.cutoffs = c(0.05,0.01, 0.001), type = "text", float=FALSE)
+```
+
+```{R}
+lm.beta(model3)
 ```
 
 Let's compare all the models now:
