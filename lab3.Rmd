@@ -210,7 +210,9 @@ hist(crime_data_clean$crmrte, breaks = 50,
      xlab = 'Crime Rate' )
 ```
 
-As a result, we will apply a log() transformation to the variable, which will address both issues. This transformation will change our interpretation as well, since the result will need to be interrpeted as a percentage change for Crime Rate.. 
+As a result, we will apply a log() transformation to the variable, which will address both issues. 
+
+This transformation will change our interpretation, since the model results will be for percentage changes for Crime Rate. Given the small values of the variable in its original units, this change in interpretation will make the results easier to interpret. 
 
 ```{r}
 crime_data_clean['log_crmrte'] = log(crime_data_clean$crmrte)
@@ -227,7 +229,7 @@ hist(crime_data_clean$log_crmrte, breaks = 50,
 ## Model 1 - using the Judicial system variables only
 
 ```{R, results='asis'}
-model1 = lm(crime_data_clean$crmrte ~ 
+model1 = lm(crime_data_clean$log_crmrte ~ 
               crime_data_clean$prbarr + 
               crime_data_clean$prbconv_fix + 
               crime_data_clean$prbpris + 
@@ -241,41 +243,28 @@ plot(model1)
 ```
 Zero conditional mean is violated. The Q-Q plot indicates a good amount of normality. This model is defintiely heteroskedastic from looking at the scalel-location plot.There are no points with Cook's distance > 1 which means that there are no significant outliers.
 
-Looking at a second model that has a log transformation of the crmrte variable:
-
-## Model1_log: Log of crmrte 
-```{R, results='asis'}
-model1_logy = lm(log(crime_data_clean$crmrte) ~ 
-              crime_data_clean$prbarr + 
-              crime_data_clean$prbconv_fix + 
-              crime_data_clean$prbpris + 
-              crime_data_clean$avgsen)
-model1_logy
-```
-```{r}
-plot(model1_logy)
-```
-
-The Q-Q plot got better for sure though it is difficult to see if any of the other ones are better. We can use Stargazer to figure out.
-
-
 ## Model3: With all variables
 
 ```{r}
-model3 = lm(crime_data_clean$crmrte ~ crime_data_clean$prbarr + crime_data_clean$prbconv_fix + crime_data_clean$prbpris + crime_data_clean$avgsen + crime_data_clean$polpc + crime_data_clean$density + crime_data_clean$taxpc + crime_data_clean$pctmin80 + crime_data_clean$pctymle)
+model3 = lm(crime_data_clean$crmrte ~ 
+              crime_data_clean$prbarr + 
+              crime_data_clean$prbconv_fix + 
+              crime_data_clean$prbpris + 
+              crime_data_clean$avgsen + 
+              crime_data_clean$polpc + 
+              crime_data_clean$density + 
+              crime_data_clean$taxpc + 
+              crime_data_clean$pctmin80 + 
+              crime_data_clean$pctymle)
 ```
 
-```{r}
-model3_logy = lm(log(crime_data_clean$crmrte) ~ crime_data_clean$prbarr + crime_data_clean$prbconv_fix + crime_data_clean$prbpris + crime_data_clean$avgsen + crime_data_clean$polpc + crime_data_clean$density + crime_data_clean$taxpc + crime_data_clean$pctmin80 + crime_data_clean$pctymle)
-```
-
 
 ```{r}
-stargazer(model1_logy, model3_logy, star.cutoffs = c(0.05,0.01, 0.001), type = "text", float=FALSE)
+stargazer(model1, model3, star.cutoffs = c(0.05,0.01, 0.001), type = "text", float=FALSE)
 ```
 
 ```{R}
-AIC(model1_logy, model3_logy)
+AIC(model1, model3)
 ```
 
 From the above models, it is clear that some of the variables added to the model such as the density, polpc and pctmin80 are definitely improving the model as can be seen above. probconv_fix seems to be getting a lower significance in the model3. Perhaps, it is correlating heavily with other variables and therefore decreasing in significance.
@@ -292,35 +281,41 @@ Let's choose the ones that have the most significance in the stargazer output ab
 Creating model2 out of these variables:
 
 ```{r}
-model2 = lm(crime_data_clean$crmrte ~ crime_data_clean$prbarr +  crime_data_clean$density +  log(crime_data_clean$polpc) + crime_data_clean$pctmin80)
-model2_logy = lm(log(crime_data_clean$crmrte) ~ crime_data_clean$prbarr + crime_data_clean$density +  log(crime_data_clean$polpc) + 
-                   crime_data_clean$pctmin80)
+model2 = lm(crime_data_clean$crmrte ~ 
+              crime_data_clean$prbarr +  
+              crime_data_clean$density +  
+              log(crime_data_clean$polpc) + 
+              crime_data_clean$pctmin80)
 ```
 
-Let's plot the model2_logy and look at the violations:
+Let's plot the model2 and look at the our assumptions:
 ```{r}
-plot(model2_logy)
+plot(model2)
 ```
 
 Let's compare all the models now:
 
 
-
 ```{r}
-#Since models are heteroskedastic, need to use heteroskedastic-robust SEs
-se.model1_logy = sqrt(diag(vcovHC(model1_logy)))
-se.model2_logy = sqrt(diag(vcovHC(model2_logy)))
-se.model3_logy = sqrt(diag(vcovHC(model3_logy)))
-stargazer(model1_logy, model2_logy, model3_logy, 
-          se = list(se.model1_logy, se.model2_logy, se.model3_logy),
-          star.cutoffs = c(0.05,0.01, 0.001), 
-          type = "text", 
-          float=FALSE)
+# Using robust errors to compensate for heteroskedasticity
+robust_se <- function(model) {
+  cov <- vcovHC(model)
+  sqrt(diag(cov))
+}
+
+robust_errors <- list(robust_se(model1),
+                      robust_se(model2),
+                      robust_se(model3))
+
+stargazer(model1, model2, model3,
+          se = robust_errors,
+          type = 'text',
+          font.size = 'small',
+          float = FALSE)
 ```
 
 ```{r}
-AIC(model1_logy, model2_logy, model3_logy)
-#AIC(model1, model2, model3)
+AIC(model1, model2, model3)
 ```
 
 As we can see above, the AIC as well as the standard errors seem to be the best for model2. The addition of more variables really didn't help much as we go from model2 to model3. 
