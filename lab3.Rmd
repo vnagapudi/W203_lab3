@@ -252,9 +252,10 @@ scatterplotMatrix(~ log(crime_data_clean$crmrte) + crime_data_clean$density + lo
 ```{R, results='asis'}
 model1 = lm(crime_data_clean$log_crmrte ~ 
               crime_data_clean$prbarr + 
-              crime_data_clean$prbconv_fix + 
-              crime_data_clean$prbpris + 
-              crime_data_clean$avgsen)
+              crime_data_clean$prbconv_fix 
+             # + crime_data_clean$prbpris
+             #+ crime_data_clean$avgsen
+              )
 model1
 ```
 
@@ -285,8 +286,8 @@ Creating model2 out of these variables:
 model2 = lm(crime_data_clean$log_crmrte ~ 
               crime_data_clean$prbarr +  
               log(crime_data_clean$density) +  
-              crime_data_clean$polpc + 
-              crime_data_clean$taxpc +
+            #  crime_data_clean$polpc + 
+             # crime_data_clean$taxpc +
               crime_data_clean$prbconv_fix +
               crime_data_clean$pctmin80)
 ```
@@ -317,7 +318,7 @@ stargazer(model1, model3, star.cutoffs = c(0.05,0.01, 0.001), type = "text", flo
 ```
 
 ```{R}
-lm.beta(model3)
+lm.beta(model2)
 ```
 
 Let's compare all the models now:
