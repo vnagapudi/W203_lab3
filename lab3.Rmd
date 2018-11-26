@@ -2,10 +2,8 @@
 title: "W203 Lab 3: Reducing Crime by Regression Analysis"
 author: "Thomas Drage, Venkatesh Nagapudi, Miguel Jamie"
 date: "November 2018"
-output:
-  pdf_document: 
-    fig_height: 3.25
-    fig_width: 4.5
+output: pdf_document
+
 ---
 
 ```{r setup, include=FALSE}
@@ -190,15 +188,6 @@ cor(crime_data_clean$crmrte,crime_data_clean$pctmin80)
 The correlation is weak in both cases.
 
 # 3. Data Transformation
-Not sure if we have transformations in this section or in the later models section:
-
-2. What transformations should you apply to each variable? This is very important because transformations can reveal linearities in the data, make our results relevant, or help us meet model assumptions.
-
-Some inputs from today's post-class session:
-1. Use a log transformation on crime rate since the values are very small
-2. Apply transformations in X variables and try to figure out if r.square improves or MSE goes down (this requires a model to be built though)
-3. There was a discussion on Y-transformation which I didn't understand at all...not sure what that is...perhaps week 12 async has it?
-4. If you apply Y-transformation, apply it universally (Prof said this: not sure what it means!)
 
 ## Crime Rate
 
@@ -257,12 +246,60 @@ plot(model1)
 Zero conditional mean is violated. The Q-Q plot indicates a good amount of normality. This model is defintiely heteroskedastic from looking at the scalel-location plot.There are no points with Cook's distance > 1 which means that there are no significant outliers.
 
 
+## Model 3 - using judicial and demographic system variables
+
+Model 3 is a more elaborate model that takes into account both judicial and demographic system variables to come up with a likely better causal explanation of crime rate. In this model, we included all meaningful variables, while leaving out some related to wages that didn't make much sense including.
+
+```{r}
+model3 = lm(crime_data_clean$log_crmrte ~ 
+              crime_data_clean$prbarr + 
+              crime_data_clean$prbconv_fix + 
+              crime_data_clean$prbpris + 
+              crime_data_clean$avgsen + 
+              crime_data_clean$polpc + 
+              log(crime_data_clean$density) + 
+              crime_data_clean$taxpc + 
+              crime_data_clean$pctmin80 + 
+              crime_data_clean$pctymle)
+```
 
 
+Plotting the model3 to look at heteroskedasticity, zero conditional mean violation and so on:
+```{r}
+plot(model3)
+```
+The inclusion of more explanatory variables definitely improves the mean so that it is closer to zero, even though there is some violation of the zero conditional mean requirement. The Q-Q plot shows some significant deviations from normality. The model3 is better than model1 in terms of heteroskedasticity. However, there are definitely a couple of outliers that might skew results.
 
-## Model 2
+Now looking at the comparison of model1 and model3 using heteroskedastic robust standard errors:
 
- One model that includes key explanatory variables and only covariates that you believe increase the accuracy of your results without introducing substantial bias (for example, you should not include outcome variables that will absorb some of the causal effect you are interested in). This model should strike a balance between accuracy and parsimony and reflect your best understanding of the determinants of crime.
+```{r}
+
+# Using robust errors to compensate for heteroskedasticity
+robust_se <- function(model) {
+  cov <- vcovHC(model)
+  sqrt(diag(cov))
+}
+
+robust_errors <- list(robust_se(model1),
+                      robust_se(model3))
+
+stargazer(model1, model3,
+          star.cutoffs =c(0.05,0.01, 0.001),
+          se = robust_errors,
+          type = 'text',
+          font.size = 'small',
+          float = FALSE)
+
+```
+
+
+```{r}
+AIC(model1, model3)
+```
+
+As we can see, model3 has significanlty improved on the AIC, R2 and Residual SE, but there are some p-values that are not significant now (prbconv_fix, polpc). There is likely a more optimized model that has fewer coefficients that we can derive out of the Model1 and Model3 experiments above.
+
+## Model2 - with optimized Judicial and Demographic system variables
 
 From the above models, it is clear that some of the variables added to the model such as the density, polpc and pctmin80 are definitely improving the model as can be seen above. probconv_fix seems to be getting a lower significance in the model3. Perhaps, it is correlating heavily with other variables and therefore decreasing in significance.
 
@@ -288,25 +325,6 @@ Let's plot the model2 and look at the our assumptions:
 plot(model2)
 ```
 
-## Model3: With all variables
-
-```{r}
-model3 = lm(crime_data_clean$log_crmrte ~ 
-              crime_data_clean$prbarr + 
-              crime_data_clean$prbconv_fix + 
-              crime_data_clean$prbpris + 
-              crime_data_clean$avgsen + 
-              crime_data_clean$polpc + 
-              log(crime_data_clean$density) + 
-              crime_data_clean$taxpc + 
-              crime_data_clean$pctmin80 + 
-              crime_data_clean$pctymle)
-```
-
-
-```{r}
-stargazer(model1, model3, star.cutoffs = c(0.05,0.01, 0.001), type = "text", float=FALSE)
-```
 
 ```{R}
 lm.beta(model2)
@@ -314,13 +332,7 @@ lm.beta(model2)
 
 Let's compare all the models now:
 
-
 ```{r}
-# Using robust errors to compensate for heteroskedasticity
-robust_se <- function(model) {
-  cov <- vcovHC(model)
-  sqrt(diag(cov))
-}
 
 robust_errors <- list(robust_se(model1),
                       robust_se(model2),
@@ -338,73 +350,28 @@ stargazer(model1, model2, model3,
 AIC(model1, model2, model3)
 ```
 
-As we can see above, the AIC as well as the standard errors seem to be the best for model2. The addition of more variables really didn't help much as we go from model2 to model3. 
+Model2 definitely is an great improvement over Model1 with a better AIC, a much better R2 and lower Residual SE. Importantly Model2 improves over Model3 in several areas including:
+- Residuals vs Fitted plot shows that it is pretty close to satisfying the zero conditional mean requirement.
+- The Q-Q plot is more normal than Model3. So the coefficients are more robust. We see that the p-values are all very significant unlike Model3's p-values showing that the coefficients are more consistent
+- There are no major outliers in the residuals vs leverage plot unlike Model3.
 
-# 5. Discussion - Model Specification & Omitted Variables
 
-Some inputs from class: What we need to discuss is what columns were omitted that could help with getting a better model...
+#5. Discussion - Model Specification & Omitted Variables
 
 It is likely that crime rate will be heavily influenced by the following omitted variables:
+
 1. Demographics: There is very little information on demographics other than pctmin80 which is based on dated information about minorities. It could be useful to get a bigger idea on the demographics of the county population. 
+
 2. Education level: The higher the education level, the lower the crime rate
-3. Wages: The more affluent neighborhoods will tend to have lesser crime. This is somewhat reflected by the tax revenues per capita
+
+3. Wages: The more affluent neighborhoods will tend to have lesser crime. We thought this would be reflectedby tax revenues per capita, but not really so.
+
 4. Private Security: The higher the private security level, the lower the crime rate
-5. Number of bars: It's likely that the higher the number of bars in a place, the higher the crime rate is likely to be. This is dependent on "nightlife" - there is a higher probability of crime in places which have a lot of nightlife
 
+5. Number of bars etc: It's likely that the higher the number of bars in a place, the higher the crime rate is likely to be. This is dependent on "nightlife" - there is a higher probability of crime in places which have a lot of nightlife
 
-
-## What we need to show:
-After your model building process, you should include a substantial discussion of omitted variables. Identify what you think are the 5-10 most important omitted variables that bias results you care about. For each variable, you should estimate what direction the bias is in. If you can argue whether the bias is large or small, that is even better. State whether you have any variables available that may proxy (even imperfectly) for the omitted variable. Pay particular attention to whether each omitted variable bias is towards zero or away from zero. You will use this information to judge whether the effects you find are likely to be real, or whether they might be entirely an artifact of omitted variable bias.
 
 #6. Conclusion
 
-## Appendix
-[We can delete this, but moving the code for exp_pris_time here just in case we want to keep it to show our work.]
-
-The data contains several variables related to the potential consequences for a person committing a crime. These are the probabilities of being arrested, convicted, sentenced to prison, and the average length of said sentece. 
-
-Instead of using the variables individually, we will condense them into one, which will incorporate the probabilities of each step as well as the sentence. This variable, which we will call "expected time in prison" or "exp_pris_time", will be obtained by multiplying each probability and the expected average sentence. 
-```{r}
-crime_data_clean["exp_pris_time"] = crime_data_clean$prbarr * crime_data_clean$prbconv_fix * crime_data_clean$prbpris * crime_data_clean$avgsen
-```
-
-The resulting variable is right-skewed, so will then take the log, which yields a more normal distribution, and use that variable going forward. 
-
-```{r}
-hist(crime_data_clean$exp_pris_time, breaks = 30,
-     main = 'Distribution of Expected Prison Time',
-     xlab = 'Expected Prison Time (Days)' )
-
-hist(log(crime_data_clean$exp_pris_time), breaks = 30,
-     main = 'Distribution of Log(Expected Prison Time)',
-     xlab = 'Expected Prison Time (Days)' )
-
-crime_data_clean["log_exp_pris_time"] = log(crime_data_clean$exp_pris_time)
-```
-
-By using both log variables (Crime Rate and Expected Prison Time), we get a less heteroskedastic distribution between our variables, as illustrated by the plots below.
-
-```{r}
-
-lm1 = lm(crime_data_clean$crmrte ~ crime_data_clean$exp_pris_time)
-lm2 = lm(crime_data_clean$log_crmrte ~ crime_data_clean$exp_pris_time)
-lm3 = lm(crime_data_clean$log_crmrte ~ log(crime_data_clean$exp_pris_time))
-
-paste("Level - Level: ", summary(lm1)$adj.r.squared)
-paste("Log - Level:", summary(lm2)$adj.r.squared)
-paste('Log - Log:', summary(lm3)$adj.r.squared)
-
-plot(crime_data_clean$exp_pris_time, crime_data_clean$crmrte,
-     main = 'Level - Level')
-abline(lm1)
-
-plot(crime_data_clean$exp_pris_time, crime_data_clean$log_crmrte,
-     main = 'Log - Level')
-abline(lm2)
-
-plot(log(crime_data_clean$exp_pris_time), crime_data_clean$log_crmrte,
-     main = 'Log - Log')
-abline(lm3)
-
-```
+TBD
 
