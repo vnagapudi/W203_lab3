@@ -418,5 +418,7 @@ Based on our analysis, the probability of arrest and conviction help drive down 
 Density is positively correlated with crime rate. An increase of one unit in density is correlated with a 35% increase in the crime rate. 
 
 Based on these results, our policy recommendations would be to:
+
 1. Increase awareness of the effectiveness of the judicial system in counties that are effective at bringing perpetrators to justice; and increase resources, training, and oversight in those that are not.
+
 2. Further investigation of the link between population density and crime rate. Are there economic factors at play? Demographics? Policing techniques in urban settings? 
