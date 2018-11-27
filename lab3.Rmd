@@ -2,9 +2,12 @@
 title: "W203 Lab 3: Reducing Crime by Regression Analysis"
 author: "Thomas Drage, Venkatesh Nagapudi, Miguel Jaime"
 date: "November 2018"
-output: pdf_document
-  
-
+output: 
+  pdf_document: 
+    fig_height: 3
+    fig_width: 4
+fontsize: 10pt
+classoption: a4paper
 ---
 
 ```{r setup, include=FALSE}
@@ -100,7 +103,7 @@ The distribution of crime rate is right-skewed in this dataset but sufficient da
 ```{r}
 hist(crime_data_clean$crmrte, breaks = 30,
      main = 'Histogram of Crime Rate',
-     xlab = 'Crime Rate' )
+     xlab = 'Crime Rate', cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9)
 ```
 
 
@@ -113,7 +116,7 @@ hist(crime_data_clean$crmrte, breaks = 30,
 
 It is likely that crime rate will be lower when the probability of getting arrested, convicted or going to prison is higher due to the deterrent effect. These variables are expected to have causal relationships with crime rate ("crmrte") and should reveal correlation, which we examine through a scatterplot matrix:
 
-```{r}
+```{r fig.height=4, fig.width=5, fig.align='center'}
 scatterplotMatrix(~ log(crmrte) + prbarr +  prbconv_fix + prbpris, data=crime_data_clean)
 ```
 
@@ -126,7 +129,7 @@ cor(crime_data_clean$crmrte,crime_data_clean$avgsen )
 ```
 There is a small correlation, but it is unclear as to whether there will be a causal relationship and which way it would be directed. 
 
-```{r}
+```{r fig.height=4, fig.width=5, fig.align='center'}
 scatterplotMatrix(~ log(crmrte) + avgsen, data=crime_data_clean)
 ```
 
@@ -142,9 +145,10 @@ The second set of independent variables are demographic factors which may lead t
 #### Policing / Density / Tax Revenue
 
 We examined the effect of police staffing, population density and tax revenue:
-```{r}
+```{r fig.height=4.3, fig.width=5.5, fig.align='center'}
 scatterplotMatrix(~ log(crmrte) + polpc +  density + taxpc, data=crime_data_clean)
 ```
+
 Crime Rate is positively correlated to police per capita. We considered police staffing a lagging indicator: where crime rate is high, more police officers are deployed. 
 
 Looking at population density, there is a positive correlation between crime and density. This is not unexpected given high density housing is often associated with lower incomes and, in some cases, social issues. The density distribution is not normal, and might need to be transformed.
@@ -166,14 +170,14 @@ We see a positive correlation between taxpc and crime rate. The distribution of 
 ```{r}
 hist(crime_data_clean$taxpc, breaks = 50,
      main = 'Histogram of Tax Revenue Per Capita',
-     xlab = 'Tax Revenue Per Capita' )
+     xlab = 'Tax Revenue Per Capita', cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9)
 ```
 
 #### Minorities and Young Males
 
 Here we examine the relationship between the proportion of young males ("pctymle") and the percentage of minority population ("pctmin80") with crime rate:
 
-```{r}
+```{r fig.height=4, fig.width=5, fig.align='center'}
 scatterplotMatrix(~ crmrte + pctymle +  pctmin80, data=crime_data_clean)
 ```
 
@@ -198,7 +202,7 @@ As discussed in section 2, our main variable of interest, crime rate, is measure
 summary(crime_data_clean$crmrte)
 hist(crime_data_clean$crmrte, breaks = 50,
      main = 'Histogram of Crime Rate',
-     xlab = 'Crime Rate' )
+     xlab = 'Crime Rate', cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9)
 ```
 
 We applied a log() transformation to the variable which addresses both issues. 
@@ -210,7 +214,7 @@ crime_data_clean['log_crmrte'] = log(crime_data_clean$crmrte)
 summary(crime_data_clean$log_crmrte)
 hist(crime_data_clean$log_crmrte, breaks = 50,
      main = 'Histogram of log(Crime Rate)',
-     xlab = 'log(Crime Rate)' )
+     xlab = 'log(Crime Rate)', cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9)
 ```
 
 ## Density 
@@ -220,16 +224,16 @@ Density is right-skewed. Variable becomes more normal if we apply a log transfor
 ```{r}
 hist(crime_data_clean$density, breaks = 30,
      main = 'Histogram of Density',
-     xlab = 'Density' )
+     xlab = 'Density', cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9)
 
 hist(log(crime_data_clean$density), breaks = 30,
      main = 'Histogram of Density',
-     xlab = 'Density' )
+     xlab = 'Density', cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9)
 ```
 
 The variable has high correlation with our target variable, which increases slightly with the log transformation. 
 
-```{R}
+```{R  fig.height=4, fig.width=5, fig.align='center'}
 scatterplotMatrix(~ log_crmrte + density + log(density), data = crime_data_clean)
 cor(crime_data_clean$log_crmrte,crime_data_clean$density)
 cor(crime_data_clean$log_crmrte,log(crime_data_clean$density))
@@ -240,27 +244,29 @@ crime_data_clean['log_density'] = log(crime_data_clean$density)
 # 4. Regression Modelling
 
 
-## Model 1 - using the Judicial system variables only
+## Model 1 - minimal using the Judicial system variables only
 
 ```{R, results='asis'}
 model1 = lm(crime_data_clean$log_crmrte ~ 
               crime_data_clean$prbarr + 
               crime_data_clean$prbconv_fix 
-             # + crime_data_clean$prbpris
-             #+ crime_data_clean$avgsen
               )
 model1
 ```
 
-Plotting model1 to evaluate OLS assumptions.
-```{r}
-plot(model1)
+We can then plot Model1 to evaluate OLS assumptions:
+```{r, fig.height=3.75, fig.width=4.5}
+plot(model1, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 1)
+plot(model1, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 2)
+plot(model1, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 3)
+plot(model1, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 5)
 ```
+
 Zero conditional mean is violated. The Q-Q plot indicates a good amount of normality. This model is heteroskedastic as shown on the scalel-location plot.There are no points with Cook's distance > 1 which means that there are no significant outliers.
 
 ## Model 3 - using judicial and demographic system variables
 
-Model 3 is a more elaborate model that takes into account both judicial and demographic system variables to come up with a better causal explanation of crime rate. In this model, we included all meaningful variables. We decided to leave out wage-related variables since we did not fing them to be relevant to our analysis.
+Model 3 is a more elaborate model that takes into account both judicial and demographic system variables to come up with a better causal explanation of crime rate. In this model, we included all meaningful variables. We decided to leave out wage-related variables since we did not find them to be relevant to our analysis.
 
 ```{r}
 model3 = lm(crime_data_clean$log_crmrte ~ 
@@ -276,10 +282,14 @@ model3 = lm(crime_data_clean$log_crmrte ~
 ```
 
 
-Plotting model3 to evaluate OLS assumptions.
-```{r}
-plot(model3)
+We can then plot Model3 to evaluate OLS assumptions:
+```{r, fig.height=3.75, fig.width=4.5}
+plot(model3, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 1)
+plot(model3, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 2)
+plot(model3, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 3)
+plot(model3, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 5)
 ```
+
 The inclusion of more explanatory variables improves the mean, making it closer to zero, even though there is some violation of the zero conditional mean requirement. 
 
 The Q-Q plot shows significant deviations from normality. Model3 is better than model1 in terms of heteroskedasticity. However, there are definitely a couple of outliers that might skew results.
@@ -321,9 +331,9 @@ Based on the above we may consider removing those with lower (e.g. <0.1) gain.
 
 ## Model2 - with optimized Judicial and Demographic system variables
 
-From the above models, it is clear that some of the variables added to the model such as the density, polpc and pctmin80 are improving the model. The probconv_fix variable seems to be getting a lower significance in the model3. Perhaps, it is correlating heavily with other variables and therefore decreasing in significance.
+From the above models, it is clear that some of the variables added to the model such as the density, polpc and pctmin80 show particularly strong contribution to the model. The probconv_fix variable seems to of lower significance in the model3, possible it correlates heavily with other variables and therefore decreasing in significance.
 
-Selecting the variables with the most significance in the stargazer output above:
+We therefore select the following for our second model:
 
 1. prbarr
 
@@ -331,7 +341,9 @@ Selecting the variables with the most significance in the stargazer output above
 
 3. pctmin80
 
-Note that we elected to remove the police per capita variable, polpc, from this model as we believe it is likely an effect rather than a cause, and heavily correlated to other variables in the regression.
+4. prbconv_fix
+
+Note that we elected to remove the police per capita variable ("polpc") from this model as we believe it is likely an effect rather than a cause, and heavily correlated to other variables in the regression.
 
 Creating model2 out of these variables:
 
@@ -343,9 +355,12 @@ model2 = lm(crime_data_clean$log_crmrte ~
               crime_data_clean$pctmin80)
 ```
 
-Plotting model2 to evaluate OLS assumptions.
-```{r}
-plot(model2)
+We can then plot Model3 to evaluate OLS assumptions:
+```{r, fig.height=3.75, fig.width=4.5}
+plot(model2, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 1)
+plot(model2, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 2)
+plot(model2, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 3)
+plot(model2, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 5)
 ```
 
 We can now compare all three models:
