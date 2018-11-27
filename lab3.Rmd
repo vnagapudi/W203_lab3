@@ -397,23 +397,23 @@ Model2 also improves over Model3 in several areas including:
 
 It is likely that crime rate will be heavily influenced by the following omitted variables:
 
-1. Demographics: There is very little information on demographics other than pctmin80 which is based on dated information about minorities. It could be useful to get a bigger idea on the demographics of the county population. 
+1. Demographics: There is very little information on demographics other than pctmin80 which is based on dated information about minorities; the nature and proportion of particular minorities is omitted here. If, say, a particular cultural group was more prone to crime we would expect greater crime rate. It could be useful to get additional information on the type of people comprising the county population, and inclusion of variables expressing religious make-up could, for example show less crime in regions densly populated by religions valuing non-violence.
 
-2. Education level: The higher the education level, the lower the crime rate
+2. Education level: Typically we would expect higher the education level to lead to lower the crime rate. This is likely related to educated decision making but also to employment outcomes which promote stability.
 
-3. Wages: The more affluent neighborhoods will tend to have lesser crime. We thought this would be reflectedby tax revenues per capita, but not really so.
+3. Wages: The more affluent neighborhoods will tend to have lesser crime. We thought this would be reflectedby tax revenues per capita, but it does not appear to be the case. This may be due to the nature of the taxation system itself in creating a representative variable. 
 
-4. Private Security: The higher the private security level, the lower the crime rate
+4. Employment: Gainful employment of citizens is well known to decrease crime rate however, we have no information about the employment rates in each county. The only possibility is to compare the wage rates in each county which could express greater employment when competition has driven rates up. Limited employment may result in the presence of higher-density (social) housing and therefore postitively bias the density coefficient.
 
-5. Number of bars etc: It's likely that the higher the number of bars in a place, the higher the crime rate is likely to be. This is dependent on "nightlife" - there is a higher probability of crime in places which have a lot of nightlife.
+5. Commercial Sectors: High crime might be associated with regions which have a lot of bars or similar entertainment venues but less crime in rural residential areas. Such an omitted variable (say indication number of nightlife venues) would potentially bias our density dependance by increasing the co-efficient or even increase the dependence of our model probability of arrest due to police presence in entertainment areas.
 
-6. Granular Location data: County-level information might aggregate variables that, at a more granular level, would be good predictors for crime rates. 
+6. Age distribution: We are provided with a variable indicating the percent of the population who are young males, but it would be equally useful to be provided with data for children and geriatrics - both parties whose presence would decrease the crime rate. Both of these groups typically increase density, but decrease crime and we would expect their presence to bias the density variable negatively.
 
-7. More detailed crime information: Not all crime is equal, and different types of crime (violent crime, property crime, etc.) might be explained by different factors. 
+7. More detailed crime information: Not all crime is equal, and different types of crime (violent crime, property crime, etc.) might be explained by different factors. Such omitted variables bias the probability of arrest, conviction and average sentence variables. Sentence length, for example, would be dependant on a measure of the proportion of non-violent crime and we may find sentence length is also negatively biased by this omission.
 
 #6. Conclusion
 
-Based on our analysis, the probability of arrest and conviction help drive down crime rates. Increasing the probability of arrest by one unit is correlated with a 186% decrase in crime rate. Increasing the probability of conviction by one unit is correlated with a 71% decrease in crime rate. 
+Based on our analysis, the probability of arrest and conviction help drive down crime rates. Increasing the probability of arrest by one unit is correlated with a 186% decrease in crime rate. Increasing the probability of conviction by one unit is correlated with a 71% decrease in crime rate. 
 
 Density is positively correlated with crime rate. An increase of one unit in density is correlated with a 35% increase in the crime rate. 
 
