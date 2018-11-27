@@ -300,6 +300,12 @@ AIC(model1, model3)
 
 As we can see, model3 has significanlty improved on the AIC, R2 and Residual SE, but there are some p-values that are not significant now (prbconv_fix, polpc). There is likely a more optimized model that has fewer coefficients that we can derive out of the Model1 and Model3 experiments above.
 
+By looking at the standardised co-efficients, we can evaluate compare the effect of changes of each variable on the crime rate:
+```{R}
+lm.beta(model3)
+```
+Based on the above we may consider removing those with lower (e.g. <0.1) gain.
+
 ## Model2 - with optimized Judicial and Demographic system variables
 
 From the above models, it is clear that some of the variables added to the model such as the density, polpc and pctmin80 are definitely improving the model as can be seen above. probconv_fix seems to be getting a lower significance in the model3. Perhaps, it is correlating heavily with other variables and therefore decreasing in significance.
@@ -312,7 +318,7 @@ Let's choose the ones that have the most significance in the stargazer output ab
 
 3. pctmin80
 
-4. polpc
+Note that we have elected to remove the police per capita variable, polpc, from this model as we believe it is likely an effect rather than a cause and heavily correlated to other variables in the regression.
 
 Creating model2 out of these variables:
 
@@ -320,8 +326,6 @@ Creating model2 out of these variables:
 model2 = lm(crime_data_clean$log_crmrte ~ 
               crime_data_clean$prbarr +  
               log(crime_data_clean$density) +  
-            #  crime_data_clean$polpc + 
-             # crime_data_clean$taxpc +
               crime_data_clean$prbconv_fix +
               crime_data_clean$pctmin80)
 ```
@@ -332,11 +336,9 @@ plot(model2)
 ```
 
 
-```{R}
-lm.beta(model2)
-```
 
-Let's compare all the models now:
+
+We can now compare all three models:
 
 ```{r}
 
