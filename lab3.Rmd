@@ -1,6 +1,6 @@
 ---
 title: "W203 Lab 3: Reducing Crime by Regression Analysis"
-author: "Thomas Drage, Venkatesh Nagapudi, Miguel Jamie"
+author: "Thomas Drage, Venkatesh Nagapudi, Miguel Jaime"
 date: "November 2018"
 output: pdf_document
   
@@ -18,7 +18,7 @@ suppressPackageStartupMessages(library(QuantPsyc))
 
 #1. Introduction
 
-This statistical investigation is aimed at understanding the determinants of crime in order to generate policy suggestions that are applicable to the local government. The study is based upon development of causal models for crime rate, based on county level demographic and judicial data for 1987. We have identified factors which modify the rate and extended this to the development of policy proposals for a new government.
+This statistical investigation aims to understand the determinants of crime to suggest policies to the local government. The study is based upon development of causal models for crime rate, based on county level demographic and judicial data for 1987. We identified factors which modify the rate and extended this to the development of policy proposals for the incoming administration.
 
 # 2. Review of Source Data
 
@@ -28,7 +28,7 @@ crime_data = read.csv("crime_v2.csv")
 objects(crime_data)
 ```
 
-Finding out number of observations
+Overview of type and number of observations:
 ```{r}
 str(crime_data)
 ```
@@ -36,14 +36,14 @@ There are 97 of them.
 
 ## Data Cleansing
 
-Initially, it was necessary to examine the data and remove values which were clearly the result of measurement or recording error and ensure that the formatting of the dataset was consistent and able to be processed.
+Initially, we examined the data and removed values which were measurement or recording errors and ensured the formatting of the dataset was consistent and able to be processed.
 
-1. First, "NA" data is removed in some cases.
+1. "NA" data is removed in some cases.
 ```{r}
 crime_data_corr = na.omit(crime_data)
 ```
 
-2. prbconv was coded as a factor of levels - this is converted to numeric data.
+2. Variable prbconv was coded as a factor of levels - converted to numeric data.
 ```{r}
 crime_data_corr$prbconv_fix = as.numeric(as.character(crime_data_corr$prbconv))
 summary(crime_data_corr$prbconv_fix)
@@ -56,7 +56,7 @@ sum(crime_data_corr$prbconv_fix > 1)
 sum(crime_data_corr$prbpris > 1)
 ```
 
-There are 11 such values, which we remove as they indicate faulty data.
+There are 11 such values, which we removed as they indicate faulty data.
 ```{r}
 good_prob_cond =
    !((crime_data_corr$prbarr > 1) | 
@@ -66,14 +66,14 @@ crime_data_corr2 = subset (crime_data_corr, good_prob_cond)
 str(crime_data_corr2)
 ```
 
-4. There is a duplicate entry for county #193, which we will also remove from the data set.
+4. There is a duplicate entry for county #193, which we removed from the dataset.
 
 ```{r}
 crime_data_corr2[crime_data_corr2$county == 193, 1:6]
 crime_data_corr3 = crime_data_corr2[!duplicated(crime_data_corr2), ]
 ```
 
-5. There is a density value of 0.0002 - this is approximately one person in an area the size of Alabama and presumably a measurement error. Therefore, we also remove this record from the dataset.
+5. There is a density value of 0.0002 - this is approximately one person in an area the size of Alabama and presumably a measurement error. Therefore, we removed this record from the dataset.
 
 ```{r}
 good_density = (crime_data_corr3$density > 0.001)
@@ -89,14 +89,14 @@ crime_data_clean = crime_data_corr4
 
 ### Dependent Variable
 
-The crime rate ("crmrte") is the key dependent variable in this study and represents the number of crimes committed per person in the each county. 
+Crime rate ("crmrte") is the key dependent variable in this study and represents the number of crimes committed per person in each county. 
 
 Summarizing the variable we note a small range of fractional values, centred on a mean of approximately 3.5 crimes per hundred people in the year period.
 ```{r}
 summary(crime_data_clean$crmrte)
 ```
 
-The distribution of crime rate is somewhat left-skewed in this dataset but sufficient data is available for modelling.
+The distribution of crime rate is right-skewed in this dataset but sufficient data is available for modelling.
 ```{r}
 hist(crime_data_clean$crmrte, breaks = 30,
      main = 'Histogram of Crime Rate',
@@ -111,20 +111,20 @@ hist(crime_data_clean$crmrte, breaks = 30,
 3. Probability of Going to Prison ("prbpris")
 4. Average Sentence ("avgsen")
 
-It is likely that the crime rate will be lower where the probability of getting arrested, convicted or going to prison is higher due to the deterrent effect. These variables are expected to have causal relationships with crime rate ("crmrte") and should reveal correlation, which we examine through a scatterplot matrix:
+It is likely that crime rate will be lower when the probability of getting arrested, convicted or going to prison is higher due to the deterrent effect. These variables are expected to have causal relationships with crime rate ("crmrte") and should reveal correlation, which we examine through a scatterplot matrix:
 
 ```{r}
 scatterplotMatrix(~ log(crmrte) + prbarr +  prbconv_fix + prbpris, data=crime_data_clean)
 ```
 
-As we can see, the log(crmrte) seems to be negatively correlated with prbarr and prbconv_fix which is intuitive. There is perhaps a positive correlation to prbpris, the probability of prison sentencing, which is not very intuitive, but the direction of the correlation is not clear from the dataset and therefore we exclude this from our key variable set.
+The log(crmrte) is negatively correlated with prbarr and prbconv_fix, which is intuitive. There is perhaps a positive correlation to prbpris, the probability of prison sentencing, which is not intuitive, but the direction of the correlation is not clear from the dataset, therefore we excluded this from our key variable set.
 
-Finally looking at avgsen,
+Anlyzing the average sentence ("avgsen")":
 ```{r}
 summary(crime_data_clean$avgsen)
 cor(crime_data_clean$crmrte,crime_data_clean$avgsen )
 ```
-There is a small correlation here. But it is unclear as to whether there will be a causal relationship and which way it would be directed. 
+There is a small correlation, but it is unclear as to whether there will be a causal relationship and which way it would be directed. 
 
 ```{r}
 scatterplotMatrix(~ log(crmrte) + avgsen, data=crime_data_clean)
@@ -137,31 +137,31 @@ scatterplotMatrix(~ log(crmrte) + avgsen, data=crime_data_clean)
 4. Percentage of Young males ("pctymle")
 5. Percentage of minorities ("pctmin80")
 
-The second set of independent variables identified are demographic factors which may lead to changes in crime rate, typically in relation to the affluence of the county. Note however, that given the data is collected at county level these represent an average and any one county may contain urban or sub-urban and rich or poor areas with varying rates and types of crime which are not seen in this dataset.
+The second set of independent variables are demographic factors which may lead to changes in crime rate, typically in relation to the affluence of the county. Given that the data is collected at county level, these represent an average and any one county may contain a mix of areas (urban/suburban, wealthy/low-income) with corresponding variations in demographics and crimes, which are not captured in this dataset.
 
 #### Policing / Density / Tax Revenue
 
-Initially we can examine the effect of police staffing, population density and the tax revenue:
+We examined the effect of police staffing, population density and tax revenue:
 ```{r}
 scatterplotMatrix(~ log(crmrte) + polpc +  density + taxpc, data=crime_data_clean)
 ```
-Crime Rate seems to be positively correlated to the "Police per capita". If we consider police staffing as a lagging indicator, this is intuitive: where Crime Rate is high, more police officers will be deployed. This would be an inverse causal relationship.
+Crime Rate is positively correlated to police per capita. We considered police staffing a lagging indicator: where crime rate is high, more police officers are deployed. 
 
-Looking at population density, there is a positive correlation between crime and density which is not unexpected given high density housing is often associated with lesser affluence and social issues. However, the density distribution is not very normal, and might need a transformation.
+Looking at population density, there is a positive correlation between crime and density. This is not unexpected given high density housing is often associated with lower incomes and, in some cases, social issues. The density distribution is not normal, and might need to be transformed.
 
 ```{r}
 summary(crime_data_clean$density)
 cor(crime_data_clean$crmrte,crime_data_clean$density)
 ```
 
-The "taxpc" variable, tax revenue per capita, can be considered a proxy for how rich a county is. It is likely that the higher the tax paid, the more likely that the people are, on average, richer. On one hand, richer counties might be a more attractive target for property crime. On the other hand, people in this counties have less of an economic incentive to commit crime, and are likely to have better security measures than less rich counties.
+Tax revenue per capita ("taxpc" ) can be considered a proxy for the income level of a county. We assume that the higher the tax paid the more likely that the people are, on average, more wealthy. Wealthier counties might be a more attractive target for property crime; though these effects might be tempered by a higher opportunity cost for committing crime, and higher likelihood of having higher security measures (such as alarms, gated communities, etc.)
 
 ```{r}
 summary(crime_data_clean$taxpc)
 cor(crime_data_clean$crmrte, crime_data_clean$taxpc)
 ```
 
-Look at the correlation, we see a positive correlation between taxpc and crime rate. However, the distribution of taxpc is not very optimal and we may need to examine outliers closely if this is used in modelling.
+We see a positive correlation between taxpc and crime rate. The distribution of taxpc is not optimal and we may need to examine outliers closely if this is to be used in modelling.
 
 ```{r}
 hist(crime_data_clean$taxpc, breaks = 50,
@@ -169,15 +169,15 @@ hist(crime_data_clean$taxpc, breaks = 50,
      xlab = 'Tax Revenue Per Capita' )
 ```
 
-#### Minorities and Youth
+#### Minorities and Young Males
 
-Here we examine the relationship between "pctymle", the proportion of young males and "pctmin80", the percentage of minority population with the logarithm of crime rate:
+Here we examine the relationship between the proportion of young males ("pctymle") and the percentage of minority population ("pctmin80") with crime rate:
 
 ```{r}
-scatterplotMatrix(~ log(crmrte) + pctymle +  pctmin80, data=crime_data_clean)
+scatterplotMatrix(~ crmrte + pctymle +  pctmin80, data=crime_data_clean)
 ```
 
-The crime rate is higher in places with more % of young males, given traditional stereotypes this appears reasonable. The crime rate is higher generally when minority % is higher. However, both variables seem to have non-ideal distributions.
+The crime rate is higher in places with a higher percentage of young males. The crime rate is also higher when the percentage of minority population is higher. Both variables seem to have non-ideal distributions.
 
 Looking at the correlation between the variables:
 ```{r}
@@ -192,7 +192,7 @@ The correlation is weak in both cases.
 
 ## Crime Rate
 
-As discussed in section 2, our main variable of interest, crime rate, is measured in a way that results in small variations between values, and a skewed distribution:
+As discussed in section 2, our main variable of interest, crime rate, is measured in a way that results in small variations between values and a skewed distribution:
 
 ```{r}
 summary(crime_data_clean$crmrte)
@@ -201,9 +201,9 @@ hist(crime_data_clean$crmrte, breaks = 50,
      xlab = 'Crime Rate' )
 ```
 
-As a result, we will apply a log() transformation to the variable, which will address both issues. 
+We applied a log() transformation to the variable which addresses both issues. 
 
-This transformation will change our interpretation, since the model results will be for percentage changes for Crime Rate. Given the small values of the variable in its original units, this change in interpretation will make the results easier to interpret. 
+This transformation will change our interpretation, since the model results will be for percentage changes for crime rate. Given the small values of the variable in its original units, this change will make the results easier to interpret. 
 
 ```{r}
 crime_data_clean['log_crmrte'] = log(crime_data_clean$crmrte)
@@ -215,14 +215,26 @@ hist(crime_data_clean$log_crmrte, breaks = 50,
 
 ## Density 
 
+Density is right-skewed. Variable becomes more normal if we apply a log transformation. 
+
 ```{r}
 hist(crime_data_clean$density, breaks = 30,
      main = 'Histogram of Density',
      xlab = 'Density' )
+
+hist(log(crime_data_clean$density), breaks = 30,
+     main = 'Histogram of Density',
+     xlab = 'Density' )
 ```
 
+The variable has high correlation with our target variable, which increases slightly with the log transformation. 
+
 ```{R}
-scatterplotMatrix(~ log(crime_data_clean$crmrte) + crime_data_clean$density + log(crime_data_clean$density))
+scatterplotMatrix(~ log_crmrte + density + log(density), data = crime_data_clean)
+cor(crime_data_clean$log_crmrte,crime_data_clean$density)
+cor(crime_data_clean$log_crmrte,log(crime_data_clean$density))
+
+crime_data_clean['log_density'] = log(crime_data_clean$density)
 ```
 
 # 4. Regression Modelling
@@ -240,16 +252,15 @@ model1 = lm(crime_data_clean$log_crmrte ~
 model1
 ```
 
-Plotting the model1 to look at heteroskedasticity, zero conditional mean violation and so on:
+Plotting model1 to evaluate OLS assumptions.
 ```{r}
 plot(model1)
 ```
-Zero conditional mean is violated. The Q-Q plot indicates a good amount of normality. This model is defintiely heteroskedastic from looking at the scalel-location plot.There are no points with Cook's distance > 1 which means that there are no significant outliers.
-
+Zero conditional mean is violated. The Q-Q plot indicates a good amount of normality. This model is heteroskedastic as shown on the scalel-location plot.There are no points with Cook's distance > 1 which means that there are no significant outliers.
 
 ## Model 3 - using judicial and demographic system variables
 
-Model 3 is a more elaborate model that takes into account both judicial and demographic system variables to come up with a likely better causal explanation of crime rate. In this model, we included all meaningful variables, while leaving out some related to wages that didn't make much sense including.
+Model 3 is a more elaborate model that takes into account both judicial and demographic system variables to come up with a better causal explanation of crime rate. In this model, we included all meaningful variables. We decided to leave out wage-related variables since we did not fing them to be relevant to our analysis.
 
 ```{r}
 model3 = lm(crime_data_clean$log_crmrte ~ 
@@ -258,20 +269,22 @@ model3 = lm(crime_data_clean$log_crmrte ~
               crime_data_clean$prbpris + 
               crime_data_clean$avgsen + 
               crime_data_clean$polpc + 
-              log(crime_data_clean$density) + 
+              crime_data_clean$log_density + 
               crime_data_clean$taxpc + 
               crime_data_clean$pctmin80 + 
               crime_data_clean$pctymle)
 ```
 
 
-Plotting the model3 to look at heteroskedasticity, zero conditional mean violation and so on:
+Plotting model3 to evaluate OLS assumptions.
 ```{r}
 plot(model3)
 ```
-The inclusion of more explanatory variables definitely improves the mean so that it is closer to zero, even though there is some violation of the zero conditional mean requirement. The Q-Q plot shows some significant deviations from normality. The model3 is better than model1 in terms of heteroskedasticity. However, there are definitely a couple of outliers that might skew results.
+The inclusion of more explanatory variables improves the mean, making it closer to zero, even though there is some violation of the zero conditional mean requirement. 
 
-Now looking at the comparison of model1 and model3 using heteroskedastic robust standard errors:
+The Q-Q plot shows significant deviations from normality. Model3 is better than model1 in terms of heteroskedasticity. However, there are definitely a couple of outliers that might skew results.
+
+Comparing of model1 and model3 using heteroskedastic robust standard errors:
 
 ```{r}
 
@@ -308,9 +321,9 @@ Based on the above we may consider removing those with lower (e.g. <0.1) gain.
 
 ## Model2 - with optimized Judicial and Demographic system variables
 
-From the above models, it is clear that some of the variables added to the model such as the density, polpc and pctmin80 are definitely improving the model as can be seen above. probconv_fix seems to be getting a lower significance in the model3. Perhaps, it is correlating heavily with other variables and therefore decreasing in significance.
+From the above models, it is clear that some of the variables added to the model such as the density, polpc and pctmin80 are improving the model. The probconv_fix variable seems to be getting a lower significance in the model3. Perhaps, it is correlating heavily with other variables and therefore decreasing in significance.
 
-Let's choose the ones that have the most significance in the stargazer output above. These include:
+Selecting the variables with the most significance in the stargazer output above:
 
 1. prbarr
 
@@ -318,25 +331,22 @@ Let's choose the ones that have the most significance in the stargazer output ab
 
 3. pctmin80
 
-Note that we have elected to remove the police per capita variable, polpc, from this model as we believe it is likely an effect rather than a cause and heavily correlated to other variables in the regression.
+Note that we elected to remove the police per capita variable, polpc, from this model as we believe it is likely an effect rather than a cause, and heavily correlated to other variables in the regression.
 
 Creating model2 out of these variables:
 
 ```{r}
 model2 = lm(crime_data_clean$log_crmrte ~ 
               crime_data_clean$prbarr +  
-              log(crime_data_clean$density) +  
+              crime_data_clean$log_density +  
               crime_data_clean$prbconv_fix +
               crime_data_clean$pctmin80)
 ```
 
-Let's plot the model2 and look at the our assumptions:
+Plotting model2 to evaluate OLS assumptions.
 ```{r}
 plot(model2)
 ```
-
-
-
 
 We can now compare all three models:
 
@@ -358,15 +368,15 @@ stargazer(model1, model2, model3,
 AIC(model1, model2, model3)
 ```
 
-Model2 definitely is an great improvement over Model1 with a better AIC, a much better R2 and lower Residual SE. Importantly Model2 improves over Model3 in several areas including:
+Model2 shows significant improvement over Model1 with a better AIC, much better R2 and lower Residual SE. 
+
+Model2 also improves over Model3 in several areas including:
 
 - Residuals vs Fitted plot shows that it is pretty close to satisfying the zero conditional mean requirement.
 
 - The Q-Q plot is more normal than Model3. So the coefficients are more robust. We see that the p-values are all very significant unlike Model3's p-values showing that the coefficients are more consistent
 
 - There are no major outliers in the residuals vs leverage plot unlike Model3.
-
-
 
 #5. Discussion - Model Specification & Omitted Variables
 
@@ -380,10 +390,18 @@ It is likely that crime rate will be heavily influenced by the following omitted
 
 4. Private Security: The higher the private security level, the lower the crime rate
 
-5. Number of bars etc: It's likely that the higher the number of bars in a place, the higher the crime rate is likely to be. This is dependent on "nightlife" - there is a higher probability of crime in places which have a lot of nightlife
+5. Number of bars etc: It's likely that the higher the number of bars in a place, the higher the crime rate is likely to be. This is dependent on "nightlife" - there is a higher probability of crime in places which have a lot of nightlife.
 
+6. Granular Location data: County-level information might aggregate variables that, at a more granular level, would be good predictors for crime rates. 
+
+7. More detailed crime information: Not all crime is equal, and different types of crime (violent crime, property crime, etc.) might be explained by different factors. 
 
 #6. Conclusion
 
-TBD
+Based on our analysis, the probability of arrest and conviction help drive down crime rates. Increasing the probability of arrest by one unit is correlated with a 186% decrase in crime rate. Increasing the probability of conviction by one unit is correlated with a 71% decrease in crime rate. 
 
+Density is positively correlated with crime rate. An increase of one unit in density is correlated with a 35% increase in the crime rate. 
+
+Based on these results, our policy recommendations would be to:
+1. Increase awareness of the effectiveness of the judicial system in counties that are effective at bringing perpetrators to justice; and increase resources, training, and oversight in those that are not.
+2. Further investigation of the link between population density and crime rate. Are there economic factors at play? Demographics? Policing techniques in urban settings? 
