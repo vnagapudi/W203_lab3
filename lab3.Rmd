@@ -17,6 +17,8 @@ suppressPackageStartupMessages(library(stargazer))
 suppressPackageStartupMessages(library(lmtest))
 suppressPackageStartupMessages(library(sandwich))
 suppressPackageStartupMessages(library(QuantPsyc))
+suppressPackageStartupMessages(library(magrittr))
+suppressPackageStartupMessages(library(tidyverse))
 ```
 
 #1. Introduction
@@ -119,7 +121,12 @@ It is likely that crime rate will be lower when the probability of getting arres
 ```{r fig.height=4, fig.width=5, fig.align='center'}
 scatterplotMatrix(~ log(crmrte) + prbarr +  prbconv_fix + prbpris, data=crime_data_clean)
 ```
-
+```{r}
+crime_data_clean %>% 
+  keep(is.numeric) %>% 
+  gather() %>% 
+  ggplot(aes(value)) + facet_wrap(~key, scales = "free") + geom_histogram(bins = 30)
+```
 The log(crmrte) is negatively correlated with prbarr and prbconv_fix, which is intuitive. There is perhaps a positive correlation to prbpris, the probability of prison sentencing, which is not intuitive, but the direction of the correlation is not clear from the dataset, therefore we excluded this from our key variable set.
 
 Anlyzing the average sentence ("avgsen")":
