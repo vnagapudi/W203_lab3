@@ -16,9 +16,10 @@ suppressPackageStartupMessages(library(car))
 suppressPackageStartupMessages(library(stargazer))
 suppressPackageStartupMessages(library(lmtest))
 suppressPackageStartupMessages(library(sandwich))
-suppressPackageStartupMessages(library(QuantPsyc))
+suppressPackageStartupMessages(library(lm.beta))
 suppressPackageStartupMessages(library(magrittr))
 suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(corrplot))
 ```
 
 #1. Introduction
@@ -43,12 +44,12 @@ There are 97 of them.
 
 Initially, we examined the data and removed values which were measurement or recording errors and ensured the formatting of the dataset was consistent and able to be processed.
 
-1. "NA" data is removed in some cases.
+1. "NA" data is removed in some cases(there were 6 empty rows at the end of the dataset) .
 ```{r}
 crime_data_corr = na.omit(crime_data)
 ```
 
-2. Variable prbconv was coded as a factor of levels - converted to numeric data.
+2. ue to the presence of a random back-tick character in the now removed "NA" rows at the end of the dataset, the Variable prbconv was interpreted as a factor of levels - we can convert it back to numeric data with no loss.
 ```{r}
 crime_data_corr$prbconv_fix = as.numeric(as.character(crime_data_corr$prbconv))
 summary(crime_data_corr$prbconv_fix)
@@ -107,7 +108,13 @@ hist(crime_data_clean$crmrte, breaks = 30,
      main = 'Histogram of Crime Rate',
      xlab = 'Crime Rate', cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9)
 ```
+We can take an immediate view of this dependents correlation with our set of available indepedent variables, firstly excluding the wage variables:
 
+```{R}
+corrplot(cor(crime_data_clean[, c(3,4,26,6,7,8,9,10,14,24,25)]), method="ellipse")
+```
+
+We note the cases with particularly high correlation with crmrte and examine them below.
 
 ### Independent Variables - Judicial
 
@@ -121,12 +128,13 @@ It is likely that crime rate will be lower when the probability of getting arres
 ```{r fig.height=4, fig.width=5, fig.align='center'}
 scatterplotMatrix(~ log(crmrte) + prbarr +  prbconv_fix + prbpris, data=crime_data_clean)
 ```
-```{r}
+```{r fig.height=4, fig.width=5}
 crime_data_clean %>% 
   keep(is.numeric) %>% 
   gather() %>% 
   ggplot(aes(value)) + facet_wrap(~key, scales = "free") + geom_histogram(bins = 30)
 ```
+
 The log(crmrte) is negatively correlated with prbarr and prbconv_fix, which is intuitive. There is perhaps a positive correlation to prbpris, the probability of prison sentencing, which is not intuitive, but the direction of the correlation is not clear from the dataset, therefore we excluded this from our key variable set.
 
 Anlyzing the average sentence ("avgsen")":
@@ -178,6 +186,15 @@ We see a positive correlation between taxpc and crime rate. The distribution of 
 hist(crime_data_clean$taxpc, breaks = 50,
      main = 'Histogram of Tax Revenue Per Capita',
      xlab = 'Tax Revenue Per Capita', cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9)
+```
+
+### Wage Data
+
+A number of variables are provided with average wages in various sectors in each county. We can first examine these to see which might be correlated with crime rate or our other key variables:
+
+```{R}
+corr_w = cor(crime_data_clean[, c(3,4,26,6,7,8,9,10,14,25,15,16,17,18,19,20,21,22,23)])
+corrplot(corr_w[seq(1,10),seq(11,19)])
 ```
 
 #### Minorities and Young Males
