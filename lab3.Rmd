@@ -50,7 +50,7 @@ Initially, we examined the data and removed values which were measurement or rec
 crime_data_corr = na.omit(crime_data)
 ```
 
-2. ue to the presence of a random back-tick character in the now removed "NA" rows at the end of the dataset, the Variable prbconv was interpreted as a factor of levels - we can convert it back to numeric data with no loss.
+2. Due to the presence of a random back-tick character in the now removed "NA" rows at the end of the dataset, the Variable prbconv was interpreted as a factor of levels - we can convert it back to numeric data with no loss.
 ```{r}
 crime_data_corr$prbconv_fix = as.numeric(as.character(crime_data_corr$prbconv))
 summary(crime_data_corr$prbconv_fix)
@@ -131,10 +131,10 @@ It is likely that crime rate will be lower when the probability of getting arres
 scatterplotMatrix(~ log(crmrte) + prbarr +  prbconv_fix + prbpris, data=crime_data_clean)
 ```
 ```{r fig.height=4, fig.width=5}
-crime_data_clean %>% 
-  keep(is.numeric) %>% 
-  gather() %>% 
-  ggplot(aes(value)) + facet_wrap(~key, scales = "free") + geom_histogram(bins = 30)
+#crime_data_clean %>% 
+# keep(is.numeric) %>% 
+# gather() %>% 
+# ggplot(aes(value)) + facet_wrap(~key, scales = "free") + geom_histogram(bins = 30)
 ```
 
 The log(crmrte) is negatively correlated with prbarr and prbconv_fix, which is intuitive. There is perhaps a positive correlation to prbpris, the probability of prison sentencing, which is not intuitive, but the direction of the correlation is not clear from the dataset, therefore we excluded this from our key variable set.
@@ -166,7 +166,7 @@ We examined the effect of police staffing, population density and tax revenue:
 scatterplotMatrix(~ log(crmrte) + polpc +  density + taxpc, data=crime_data_clean)
 ```
 
-Crime Rate is positively correlated to police per capita. We considered police staffing a lagging indicator: where crime rate is high, more police officers are deployed. 
+Crime Rate is positively correlated to police per capita. We consider police staffing a lagging indicator: where crime rate is high, more police officers are deployed.
 
 Looking at population density, there is a positive correlation between crime and density. This is not unexpected given high density housing is often associated with lower incomes and, in some cases, social issues. The density distribution is not normal, and might need to be transformed.
 
@@ -267,6 +267,19 @@ cor(crime_data_clean$log_crmrte,log(crime_data_clean$density))
 crime_data_clean['log_density'] = log(crime_data_clean$density)
 ```
 
+## Polpc
+
+We can use a log transformed version of polpc potentially in our models even though it likely a lagging indicator.
+
+```{R  fig.height=3, fig.width=5, fig.align='center'}
+scatterplotMatrix(~ log_crmrte + log(polpc), data = crime_data_clean)
+cor(crime_data_clean$log_crmrte,crime_data_clean$polpc)
+cor(crime_data_clean$log_crmrte,log(crime_data_clean$polpc))
+
+crime_data_clean['log_polpc'] = log(crime_data_clean$polpc)
+```
+
+
 # 4. Regression Modelling
 
 
@@ -320,7 +333,8 @@ model3 = lm(crime_data_clean$log_crmrte ~
               crime_data_clean$prbconv_fix + 
               crime_data_clean$prbpris + 
               crime_data_clean$avgsen + 
-              crime_data_clean$polpc + 
+              #crime_data_clean$polpc + 
+              crime_data_clean$log_polpc +
               crime_data_clean$log_density + 
               crime_data_clean$taxpc + 
               crime_data_clean$pctmin80 + 
@@ -363,11 +377,11 @@ robust_se <- function(model) {
 
 robust_errors <- list(robust_se(model3))
 
-stargazer(model3,
+stargazer(model1, model3,
           star.cutoffs =c(0.05,0.01, 0.001),
           se = robust_errors,
           type = 'latex',
-          column.labels = 'Model 3',
+          column.labels = c('Model 1','Model 3'),
           font.size = 'small',
           float = FALSE)
 
@@ -384,11 +398,30 @@ By looking at the standardised co-efficients, we can evaluate compare the effect
 ```{R}
 lm.beta(model3)
 ```
-Based on the above we may consider removing those with lower (e.g. <0.1) gain in addition to those which are not statistically significant.
+Based on the above we may consider removing those with lower (e.g. <0.1) gain in addition to those which are not statistically significant. 
 
 ## Model 2 - with optimized Judicial and Demographic system variables
 
-From the above models, it is clear that some of the variables added to the model such as the density, polpc and pctmin80 show particularly strong contribution to the model. The probconv_fix variable seems to of lower significance in the Model 3, possible it correlates heavily with other variables and therefore decreasing in significance.
+From the above models, it is clear that some of the variables added to the model such as the density, polpc and pctmin80 show particularly strong contribution to the model. The prbconv_fix variable seems to of lower significance in the Model 3. This is because it correlates quite a bit with polpc. If we remove "polpc" from the model3, prbconv_fix becomes significant. We can see this here:
+
+```{r}
+#everything in model3 except polpc
+model4 = lm(crime_data_clean$log_crmrte ~ 
+              crime_data_clean$prbarr + 
+              crime_data_clean$prbconv_fix + 
+              crime_data_clean$prbpris + 
+              crime_data_clean$avgsen + 
+              #crime_data_clean$polpc + 
+              #crime_data_clean$log_polpc +
+              crime_data_clean$log_density + 
+              crime_data_clean$taxpc + 
+              crime_data_clean$pctmin80 + 
+              crime_data_clean$pctymle)
+lm.beta(model4)
+```
+
+We can see here that prbconv_fix > 0.1 and is a good candidate for our parsimonious model.
+
 
 We therefore select the following for our second model:
 
@@ -409,6 +442,8 @@ model2 = lm(crime_data_clean$log_crmrte ~
               crime_data_clean$prbarr +  
               crime_data_clean$log_density +  
               crime_data_clean$prbconv_fix +
+              #crime_data_clean$log_polpc +
+              #crime_data_clean$taxpc + 
               crime_data_clean$pctmin80)
 ```
 
