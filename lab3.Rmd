@@ -12,6 +12,7 @@ classoption: a4paper
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.align = 'center')
 suppressPackageStartupMessages(library(car))
 suppressPackageStartupMessages(library(stargazer))
 suppressPackageStartupMessages(library(lmtest))
@@ -108,13 +109,14 @@ hist(crime_data_clean$crmrte, breaks = 30,
      main = 'Histogram of Crime Rate',
      xlab = 'Crime Rate', cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9)
 ```
+
 We can take an immediate view of this dependents correlation with our set of available indepedent variables, firstly excluding the wage variables:
 
 ```{R}
 corrplot(cor(crime_data_clean[, c(3,4,26,6,7,8,9,10,14,24,25)]), method="ellipse")
 ```
 
-We note the cases with particularly high correlation with crmrte and examine them below.
+We note the cases with particularly high correlation with crmrte and examine them below as candidate regression variables.
 
 ### Independent Variables - Judicial
 
@@ -220,37 +222,28 @@ The correlation is weak in both cases.
 
 ## Crime Rate
 
-As discussed in section 2, our main variable of interest, crime rate, is measured in a way that results in small variations between values and a skewed distribution:
+As discussed in section 2, our main variable of interest, crime rate, is measured in a way that results in small variations between values and a skewed distribution. The histogram below shows this distribution.
 
-```{r}
-summary(crime_data_clean$crmrte)
-hist(crime_data_clean$crmrte, breaks = 50,
+```{r fig.width=3, fig.show='hold', fig.align='center'}
+hist(crime_data_clean$crmrte, breaks = 30,
      main = 'Histogram of Crime Rate',
      xlab = 'Crime Rate', cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9)
-```
 
-We applied a log() transformation to the variable which addresses both issues. 
-
-This transformation will change our interpretation, since the model results will be for percentage changes for crime rate. Given the small values of the variable in its original units, this change will make the results easier to interpret. 
-
-```{r}
 crime_data_clean['log_crmrte'] = log(crime_data_clean$crmrte)
-summary(crime_data_clean$log_crmrte)
-hist(crime_data_clean$log_crmrte, breaks = 50,
+hist(crime_data_clean$log_crmrte, breaks = 30,
      main = 'Histogram of log(Crime Rate)',
      xlab = 'log(Crime Rate)', cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9)
 ```
-```{R}
-ggplot(data=crime_data_clean, aes(log(crmrte))) + 
-  geom_histogram(aes(y =..count..), bins=50) + geom_density(aes(y = ..scaled..))
-  labs(title="...................", x=".....", y=".......")
-```
+
+We applied a log() transformation, as shown above to the variable which addresses both issues well. 
+
+This transformation will change our interpretation, since the model coefficients will represent percentage changes for crime rate. Given the intended usage in reducing this rate and small values of the variable in its original units, this change will make the results easier to interpret.
 
 ## Density 
 
 Density is right-skewed. Variable becomes more normal if we apply a log transformation. 
 
-```{r}
+```{r fig.width=3, fig.show='hold', fig.align='center'}
 hist(crime_data_clean$density, breaks = 30,
      main = 'Histogram of Density',
      xlab = 'Density', cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9)
@@ -275,23 +268,43 @@ crime_data_clean['log_density'] = log(crime_data_clean$density)
 
 ## Model 1 - minimal using the Judicial system variables only
 
-```{R, results='asis'}
+```{R}
 model1 = lm(crime_data_clean$log_crmrte ~ 
               crime_data_clean$prbarr + 
               crime_data_clean$prbconv_fix 
               )
-model1
+model1$coefficients
 ```
 
-We can then plot Model1 to evaluate OLS assumptions:
-```{r, fig.height=3.75, fig.width=4.5}
+Our hypothesis underlying this simple model is that the crime rate is correlated with the efficiency of the justice system, all other demographic factors being approximately equal as justice deters and controls the proliferation of criminal activity. The negative coefficients above support this with the probability of arrest being a stronger contributor than the probability of conviction.
+
+However, this is not the most complete model, and the R^2^ value is relatively poor and reveals scope for a more sophisticated model:
+```{R}
+summary(model1)$r.square
+```
+
+We can then plot diagnostics for Model 1 to evaluate OLS assumptions:
+```{R fig.width=3.1, fig.height=4, fig.show='hold', fig.align='center'}
 plot(model1, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 1)
-plot(model1, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 2)
 plot(model1, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 3)
+```
+* *MLR1 Linearity*: The model is linear in the parameters given.
+* *MLR2 Random Sampling*: The sampling process is not clear but assumed to be a random selection of counties.
+* *MLR3 Colinearity*: Inspection of scatterplots above did not reveal any perfect colinearity amongst the chosen varaibles.
+* *MLR4 Zero Conditional Mean*: The fitted vs. residuals plot above shows a violation of zero-conditional mean for this model. This suggests some non-linearity with our chosen indepedents.
+* *MLR5 Homeskedasticity*: This model is heteroskedastic. We confirm this using the  Breusch-Pagan test and note marginal confirmation. For this reason, we will use robust standard errors going forward.
+
+```{R}
+bptest(model1)
+```
+
+```{R fig.width=3.1, fig.height=4, fig.show='hold', fig.align='center'}
+plot(model1, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 2)
 plot(model1, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 5)
 ```
+* *MLR6 Normality*: The Q-Q plot indicates a good normality of the residuals. 
 
-Zero conditional mean is violated. The Q-Q plot indicates a good amount of normality. This model is heteroskedastic as shown on the scalel-location plot.There are no points with Cook's distance > 1 which means that there are no significant outliers.
+Finally, there are no points with Cook's distance > 1 which means that there are no outliers with excessive influence.
 
 ## Model 3 - using judicial and demographic system variables
 
@@ -311,21 +324,32 @@ model3 = lm(crime_data_clean$log_crmrte ~
 ```
 
 
-We can then plot Model3 to evaluate OLS assumptions:
-```{r, fig.height=3.75, fig.width=4.5}
+We can then plot Model 3 to evaluate OLS assumptions:
+```{R fig.width=3.1, fig.height=4, fig.show='hold', fig.align='center'}
 plot(model3, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 1)
-plot(model3, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 2)
 plot(model3, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 3)
-plot(model3, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 5)
+```
+* *MLR1-3*: As per Model 1 above.
+* *MLR4 Zero Conditional Mean*: The inclusion of more explanatory variables improves the mean residual, making it closer to zero.
+* *MLR5 Homoskedasticity*: This model appears to have improved the scale location plot and the Breusch-Pagan test does not reject homoskedasticity.
+```{R}
+bptest(model3)
 ```
 
-The inclusion of more explanatory variables improves the mean, making it closer to zero, even though there is some violation of the zero conditional mean requirement. 
+```{R fig.width=3.1, fig.height=4, fig.show='hold', fig.align='center'}
+plot(model3, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 2)
+plot(model3, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 5)
+```
+* *MLR6 Normality*: The Q-Q plot shows some deviations from normality which we confirm with a Shapiro-Wilks test. This suggests non-linearity in one or more of our model variables, most prominently in lower quartiles.
+```{R}
+shapiro.test(model3$residuals)
+```
 
-The Q-Q plot shows significant deviations from normality. Model3 is better than model1 in terms of heteroskedasticity. However, there are definitely a couple of outliers that might skew results.
+However, we note there are a couple of high influence outliers which may be negatively affecting the regression.
 
-Comparing of model1 and model3 using heteroskedastic robust standard errors:
+We can then display Model 3 using heteroskedastic robust standard errors:
 
-```{r}
+```{r results="asis"}
 
 # Using robust errors to compensate for heteroskedasticity
 robust_se <- function(model) {
@@ -333,34 +357,34 @@ robust_se <- function(model) {
   sqrt(diag(cov))
 }
 
-robust_errors <- list(robust_se(model1),
-                      robust_se(model3))
+robust_errors <- list(robust_se(model3))
 
-stargazer(model1, model3,
+stargazer(model3,
           star.cutoffs =c(0.05,0.01, 0.001),
           se = robust_errors,
-          type = 'text',
+          type = 'latex',
+          column.labels = 'Model 3',
           font.size = 'small',
           float = FALSE)
 
 ```
 
-
+We can also evaluate the Akaike Information Criterion for both models to check goodness of fit relative to parsimony:
 ```{r}
 AIC(model1, model3)
 ```
 
-As we can see, model3 has significanlty improved on the AIC, R2 and Residual SE, but there are some p-values that are not significant now (prbconv_fix, polpc). There is likely a more optimized model that has fewer coefficients that we can derive out of the Model1 and Model3 experiments above.
+As we can see, Model 3 has significanlty improved on the AIC, R2 and Residual SE, but there are some coefficients which are not statistically significant (prbconv_fix, polpc). There is likely a more optimized model that has fewer coefficients that we can derive out of the Model 1 and Model 3 experiments above.
 
 By looking at the standardised co-efficients, we can evaluate compare the effect of changes of each variable on the crime rate:
 ```{R}
 lm.beta(model3)
 ```
-Based on the above we may consider removing those with lower (e.g. <0.1) gain.
+Based on the above we may consider removing those with lower (e.g. <0.1) gain in addition to those which are not statistically significant.
 
-## Model2 - with optimized Judicial and Demographic system variables
+## Model 2 - with optimized Judicial and Demographic system variables
 
-From the above models, it is clear that some of the variables added to the model such as the density, polpc and pctmin80 show particularly strong contribution to the model. The probconv_fix variable seems to of lower significance in the model3, possible it correlates heavily with other variables and therefore decreasing in significance.
+From the above models, it is clear that some of the variables added to the model such as the density, polpc and pctmin80 show particularly strong contribution to the model. The probconv_fix variable seems to of lower significance in the Model 3, possible it correlates heavily with other variables and therefore decreasing in significance.
 
 We therefore select the following for our second model:
 
@@ -374,7 +398,7 @@ We therefore select the following for our second model:
 
 Note that we elected to remove the police per capita variable ("polpc") from this model as we believe it is likely an effect rather than a cause, and heavily correlated to other variables in the regression.
 
-Creating model2 out of these variables:
+Creating Model 2 out of these variables:
 
 ```{r}
 model2 = lm(crime_data_clean$log_crmrte ~ 
@@ -384,17 +408,32 @@ model2 = lm(crime_data_clean$log_crmrte ~
               crime_data_clean$pctmin80)
 ```
 
-We can then plot Model3 to evaluate OLS assumptions:
-```{r, fig.height=3.75, fig.width=4.5}
+We can then plot diagnostics for Model 3 to evaluate OLS assumptions:
+```{R fig.width=3.1, fig.height=4, fig.show='hold', fig.align='center'}
 plot(model2, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 1)
-plot(model2, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 2)
 plot(model2, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 3)
+```
+* *MLR1-3*: As per Model 1 above.
+* *MLR4 Zero Conditional Mean*: Further improvement and no violation of zero conditional mean in this model.
+* *MLR5 Homoskedasticity*: This model appears to have futher improved the scale location plot and the Breusch-Pagan test does not reject homoskedasticity.
+```{R}
+bptest(model2)
+```
+
+```{R fig.width=3.1, fig.height=4, fig.show='hold', fig.align='center'}
+plot(model2, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 2)
 plot(model2, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 5)
 ```
+* *MLR6 Normality*: The Q-Q plot is more normal than Model 3. So the coefficients are more robust. We see that the p-values are all very significant unlike Model 3's p-values showing that the coefficients are more consistent. The Shapiro-Wilks test does not reject normality:
+```{R}
+shapiro.test(model2$residuals)
+```
+
+Additionally, are no outliers with high influence in this model specification.
 
 We can now compare all three models:
 
-```{r}
+```{r results="asis"}
 
 robust_errors <- list(robust_se(model1),
                       robust_se(model2),
@@ -403,7 +442,8 @@ robust_errors <- list(robust_se(model1),
 stargazer(model1, model2, model3,
           star.cutoffs =c(0.05,0.01, 0.001),
           se = robust_errors,
-          type = 'text',
+          type = 'latex',
+          column.labels = c('Model 1', 'Model 2', 'Model 3'),
           font.size = 'small',
           float = FALSE)
 ```
@@ -412,15 +452,8 @@ stargazer(model1, model2, model3,
 AIC(model1, model2, model3)
 ```
 
-Model2 shows significant improvement over Model1 with a better AIC, much better R2 and lower Residual SE. 
+Model 2 shows significant improvement over Model1 with a better AIC, much better R^2^ and lower Residual SE. We note that the F-test supports all three models, but our chosen model has a greater statistic, suggesting strong joint significance of our model.
 
-Model2 also improves over Model3 in several areas including:
-
-- Residuals vs Fitted plot shows that it is pretty close to satisfying the zero conditional mean requirement.
-
-- The Q-Q plot is more normal than Model3. So the coefficients are more robust. We see that the p-values are all very significant unlike Model3's p-values showing that the coefficients are more consistent
-
-- There are no major outliers in the residuals vs leverage plot unlike Model3.
 
 #5. Discussion - Model Specification & Omitted Variables
 
