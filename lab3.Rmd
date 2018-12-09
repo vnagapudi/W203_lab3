@@ -240,6 +240,11 @@ hist(crime_data_clean$log_crmrte, breaks = 50,
      main = 'Histogram of log(Crime Rate)',
      xlab = 'log(Crime Rate)', cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9)
 ```
+```{R}
+ggplot(data=crime_data_clean, aes(log(crmrte))) + 
+  geom_histogram(aes(y =..count..), bins=50) + geom_density(aes(y = ..scaled..))
+  labs(title="...................", x=".....", y=".......")
+```
 
 ## Density 
 
