@@ -420,10 +420,9 @@ model4 = lm(crime_data_clean$log_crmrte ~
 lm.beta(model4)
 ```
 
-We can see here that prbconv_fix > 0.1 and is a good candidate for our parsimonious model.
+We can see here that prbconv_fix > 0.1 in magnitude and is a good candidate for our parsimonious model.
 
-
-We therefore select the following for our second model:
+We therefore select the following for our second model, but we will go through one more iteration after we look at the joint significance of these variables.
 
 1. prbarr
 
@@ -433,21 +432,34 @@ We therefore select the following for our second model:
 
 4. prbconv_fix
 
+5. taxpc
+
 Note that we elected to remove the police per capita variable ("polpc") from this model as we believe it is likely an effect rather than a cause, and heavily correlated to other variables in the regression.
 
 Creating Model 2 out of these variables:
+
+```{r}
+model2_ver1 = lm(crime_data_clean$log_crmrte ~ 
+              crime_data_clean$prbarr +  
+              crime_data_clean$log_density +  
+              crime_data_clean$prbconv_fix +
+              crime_data_clean$taxpc + 
+              crime_data_clean$pctmin80)
+coeftest(model2_ver1, vcov = vcovHC)
+```
+We can see that taxpc is not showing up as being signficant, as a result we will remove it from the final model and go with the other 4 variables to get to a more parsimonious model.
+
 
 ```{r}
 model2 = lm(crime_data_clean$log_crmrte ~ 
               crime_data_clean$prbarr +  
               crime_data_clean$log_density +  
               crime_data_clean$prbconv_fix +
-              #crime_data_clean$log_polpc +
-              #crime_data_clean$taxpc + 
               crime_data_clean$pctmin80)
 ```
 
-We can then plot diagnostics for Model 3 to evaluate OLS assumptions:
+
+We can then plot diagnostics for Model 2 to evaluate OLS assumptions:
 ```{R fig.width=3.1, fig.height=4, fig.show='hold', fig.align='center'}
 plot(model2, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 1)
 plot(model2, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which = 3)
