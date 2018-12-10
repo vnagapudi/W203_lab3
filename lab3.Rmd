@@ -335,24 +335,43 @@ plot(model1, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which
 ```
 * *MLR6 Normality*: The Q-Q plot indicates a good normality of the residuals. 
 
-Finally, there are no points with Cook's distance > 1 which means that there are no outliers with excessive influence.
+Finally, there is one point (51) with Cook's distance > 1 which we need to examine.
+
+```{r}
+crime_data_clean[51,]
+```
+Since 51 is an outlier due to high prbconv and prbarr both being greater than 1, we will remove this from the model.
+
+```{r}
+crime_data_clean2 = crime_data_clean[-c(51),]
+nrow(crime_data_clean2)
+```
+Redoing model1 to remove row 51:
+
+```{R}
+model1 = lm(crime_data_clean2$log_crmrte ~ 
+              crime_data_clean2$prbarr + 
+              crime_data_clean2$prbconv_fix 
+              )
+model1$coefficients
+```
 
 ## Model 3 - using judicial and demographic system variables
 
 Model 3 is a more elaborate model that takes into account both judicial and demographic system variables to come up with a better causal explanation of crime rate. In this model, we included all meaningful variables. We decided to leave out wage-related variables since we did not find them to be relevant to our analysis.
 
 ```{r}
-model3 = lm(crime_data_clean$log_crmrte ~ 
-              crime_data_clean$prbarr + 
-              crime_data_clean$prbconv_fix + 
-              crime_data_clean$prbpris + 
-              crime_data_clean$avgsen + 
-              #crime_data_clean$polpc + 
-              crime_data_clean$log_polpc +
-              crime_data_clean$log_density + 
-              crime_data_clean$taxpc + 
-              crime_data_clean$pctmin80 + 
-              crime_data_clean$pctymle)
+model3 = lm(crime_data_clean2$log_crmrte ~ 
+              crime_data_clean2$prbarr + 
+              crime_data_clean2$prbconv_fix + 
+              crime_data_clean2$prbpris + 
+              crime_data_clean2$avgsen + 
+              #crime_data_clean2$polpc + 
+              crime_data_clean2$log_polpc +
+              crime_data_clean2$log_density + 
+              crime_data_clean2$taxpc + 
+              crime_data_clean2$pctmin80 + 
+              crime_data_clean2$pctymle)
 ```
 
 
@@ -420,17 +439,17 @@ From the above models, it is clear that some of the variables added to the model
 
 ```{r}
 #everything in model3 except polpc
-model4 = lm(crime_data_clean$log_crmrte ~ 
-              crime_data_clean$prbarr + 
-              crime_data_clean$prbconv_fix + 
-              crime_data_clean$prbpris + 
-              crime_data_clean$avgsen + 
+model4 = lm(crime_data_clean2$log_crmrte ~ 
+              crime_data_clean2$prbarr + 
+              crime_data_clean2$prbconv_fix + 
+              crime_data_clean2$prbpris + 
+              crime_data_clean2$avgsen + 
               #crime_data_clean$polpc + 
               #crime_data_clean$log_polpc +
-              crime_data_clean$log_density + 
-              crime_data_clean$taxpc + 
-              crime_data_clean$pctmin80 + 
-              crime_data_clean$pctymle)
+              crime_data_clean2$log_density + 
+              crime_data_clean2$taxpc + 
+              crime_data_clean2$pctmin80 + 
+              crime_data_clean2$pctymle)
 lm.beta(model4)
 ```
 
@@ -453,23 +472,23 @@ Note that we elected to remove the police per capita variable ("polpc") from thi
 Creating Model 2 out of these variables:
 
 ```{r}
-model2_ver1 = lm(crime_data_clean$log_crmrte ~ 
-              crime_data_clean$prbarr +  
-              crime_data_clean$log_density +  
-              crime_data_clean$prbconv_fix +
-              crime_data_clean$taxpc + 
-              crime_data_clean$pctmin80)
+model2_ver1 = lm(crime_data_clean2$log_crmrte ~ 
+              crime_data_clean2$prbarr +  
+              crime_data_clean2$log_density +  
+              crime_data_clean2$prbconv_fix +
+              crime_data_clean2$taxpc + 
+              crime_data_clean2$pctmin80)
 coeftest(model2_ver1, vcov = vcovHC)
 ```
 We can see that taxpc is not showing up as being signficant, as a result we will remove it from the final model and go with the other 4 variables to get to a more parsimonious model.
 
 
 ```{r}
-model2 = lm(crime_data_clean$log_crmrte ~ 
-              crime_data_clean$prbarr +  
-              crime_data_clean$log_density +  
-              crime_data_clean$prbconv_fix +
-              crime_data_clean$pctmin80)
+model2 = lm(crime_data_clean2$log_crmrte ~ 
+              crime_data_clean2$prbarr +  
+              crime_data_clean2$log_density +  
+              crime_data_clean2$prbconv_fix +
+              crime_data_clean2$pctmin80)
 ```
 
 
