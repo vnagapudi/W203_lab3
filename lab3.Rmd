@@ -45,8 +45,9 @@ There are 97 of them.
 
 Initially, we examined the data and removed values which were measurement or recording errors and ensured the formatting of the dataset was consistent and able to be processed.
 
-1. "NA" data is removed in some cases(there were 6 empty rows at the end of the dataset) .
+1.We noticed six rows with no data, all fields were "NA" data. Proceeded to remove these rows, since they are most likely an import error, and contain no data that could be analyzed. 
 ```{r}
+crime_data[!complete.cases(crime_data), ]
 crime_data_corr = na.omit(crime_data)
 ```
 
@@ -56,40 +57,55 @@ crime_data_corr$prbconv_fix = as.numeric(as.character(crime_data_corr$prbconv))
 summary(crime_data_corr$prbconv_fix)
 ```
 
-3. Probability values are > 1 in some cases. 
+3. Probability values are greater than one in some cases for probability of arrest, and probability of conviciton. Probability of prison time does not exhibit this behavior. 
+
+Having an event with probability greater than one does not make sense: there cannot be a probability value higher than "certain to occur". 
+
+If we assume the probability of arrest is the number of arrests or number of convictions dividied by the number of offenses, it is plausible that a given offense was committed by more than one individuak. In these cases, there could be more than one arrest or conviction for a single offense. 
+
+The variable, then, overestimates the probability of being arrested or convicted for a given offense. This issue could be present on all observations, not just on the ones where the justice system secured enough arrests or convictions to have the varable in question be greater than one. 
+
+Removing the variables would remove from our analysis certain counties would not fix the potential overestimation, it would simply remove from our analysis counties that seem to have better-than-average arrest or conviction rates. In light of this, we decided to include the rows in our analysis. We elected not top code these as one either, since we would be artificially lowering their numbers while leaving other overstimations intact. 
+
 ```{r}
-sum(crime_data_corr$prbarr > 1)
-sum(crime_data_corr$prbconv_fix > 1)
-sum(crime_data_corr$prbpris > 1)
+crime_data_corr[crime_data_corr$prbarr > 1, "prbarr"]
+crime_data_corr[crime_data_corr$prbconv_fix > 1, "prbconv_fix"]
+crime_data_corr[crime_data_corr$prbpris > 1, "prbpris"]
 ```
 
-There are 11 such values, which we removed as they indicate faulty data.
 ```{r}
-good_prob_cond =
-   !((crime_data_corr$prbarr > 1) | 
-   (crime_data_corr$prbconv_fix > 1) |
-   (crime_data_corr$prbpris > 1))
-crime_data_corr2 = subset (crime_data_corr, good_prob_cond)
-str(crime_data_corr2)
+# TODO: remove if edit looks good to rest of the team.
+
+# There are 11 such values, which we removed as they indicate faulty data.
+
+#sum(crime_data_corr$prbarr > 1)
+#sum(crime_data_corr$prbconv_fix > 1)
+#sum(crime_data_corr$prbpris > 1)
+#good_prob_cond =
+#   !((crime_data_corr$prbarr > 1) | 
+#   (crime_data_corr$prbconv_fix > 1) |
+#   (crime_data_corr$prbpris > 1))
+#crime_data_corr2 = subset (crime_data_corr, good_prob_cond)
+#str(crime_data_corr2)
 ```
 
-4. There is a duplicate entry for county #193, which we removed from the dataset.
+4. There is a duplicate entry for county #193. We verified that all the data was the same, including the county, and once confirmed we removed the observation from the dataset.
 
 ```{r}
-crime_data_corr2[crime_data_corr2$county == 193, 1:6]
-crime_data_corr3 = crime_data_corr2[!duplicated(crime_data_corr2), ]
+crime_data_corr[crime_data_corr$county == 193, 1:6]
+crime_data_corr2 = crime_data_corr[!duplicated(crime_data_corr), ]
 ```
 
 5. There is a density value of 0.0002 - this is approximately one person in an area the size of Alabama and presumably a measurement error. Therefore, we removed this record from the dataset.
 
 ```{r}
-good_density = (crime_data_corr3$density > 0.001)
-crime_data_corr4 = subset(crime_data_corr3, good_density)
+good_density = (crime_data_corr2$density > 0.001)
+crime_data_corr3 = subset(crime_data_corr2, good_density)
 ```
 
-After cleansing we have 79 records, which we store as our master dataset.
+After cleansing we have 89 records, which we store as our master dataset.
 ```{r}
-crime_data_clean = crime_data_corr4
+crime_data_clean = crime_data_corr3
 ```
 
 # 3. Identification of Key Variables
@@ -103,7 +119,9 @@ Summarizing the variable we note a small range of fractional values, centred on 
 summary(crime_data_clean$crmrte)
 ```
 
-The distribution of crime rate is right-skewed in this dataset but sufficient data is available for modelling.
+The distribution of crime rate is right-skewed in this dataset. 
+
+Even though the number of observations (89) is large enough for modelling without concern for the skew noted in the variable. In the data transformation section we will determine if a transformation is needed for separate reasons. 
 ```{r}
 hist(crime_data_clean$crmrte, breaks = 30,
      main = 'Histogram of Crime Rate',
@@ -113,7 +131,7 @@ hist(crime_data_clean$crmrte, breaks = 30,
 We can take an immediate view of this dependents correlation with our set of available indepedent variables, firstly excluding the wage variables:
 
 ```{R}
-corrplot(cor(crime_data_clean[, c(3,4,26,6,7,8,9,10,14,24,25)]), method="ellipse")
+corrplot(cor(crime_data_clean[, c(3,4,26,6,7,8,9,10,14,24,25)]), method="ellipse", type="upper", tl.col="black", tl.srt=45)
 ```
 
 We note the cases with particularly high correlation with crmrte and examine them below as candidate regression variables.
@@ -128,16 +146,10 @@ We note the cases with particularly high correlation with crmrte and examine the
 It is likely that crime rate will be lower when the probability of getting arrested, convicted or going to prison is higher due to the deterrent effect. These variables are expected to have causal relationships with crime rate ("crmrte") and should reveal correlation, which we examine through a scatterplot matrix:
 
 ```{r fig.height=4, fig.width=5, fig.align='center'}
-scatterplotMatrix(~ log(crmrte) + prbarr +  prbconv_fix + prbpris, data=crime_data_clean)
-```
-```{r fig.height=4, fig.width=5}
-#crime_data_clean %>% 
-# keep(is.numeric) %>% 
-# gather() %>% 
-# ggplot(aes(value)) + facet_wrap(~key, scales = "free") + geom_histogram(bins = 30)
+scatterplotMatrix(~ crmrte + prbarr +  prbconv_fix + prbpris, data=crime_data_clean)
 ```
 
-The log(crmrte) is negatively correlated with prbarr and prbconv_fix, which is intuitive. There is perhaps a positive correlation to prbpris, the probability of prison sentencing, which is not intuitive, but the direction of the correlation is not clear from the dataset, therefore we excluded this from our key variable set.
+The crmrte is negatively correlated with prbarr and prbconv_fix, which is intuitive. There is perhaps a positive correlation to prbpris, the probability of prison sentencing, which is not intuitive, but the direction of the correlation is not clear from the dataset, therefore we excluded this from our key variable set.
 
 Anlyzing the average sentence ("avgsen")":
 ```{r}
@@ -147,7 +159,7 @@ cor(crime_data_clean$crmrte,crime_data_clean$avgsen )
 There is a small correlation, but it is unclear as to whether there will be a causal relationship and which way it would be directed. 
 
 ```{r fig.height=4, fig.width=5, fig.align='center'}
-scatterplotMatrix(~ log(crmrte) + avgsen, data=crime_data_clean)
+scatterplotMatrix(~ crmrte + avgsen, data=crime_data_clean)
 ```
 
 ### Independent Variables - Demographic
@@ -163,7 +175,7 @@ The second set of independent variables are demographic factors which may lead t
 
 We examined the effect of police staffing, population density and tax revenue:
 ```{r fig.height=4.3, fig.width=5.5, fig.align='center'}
-scatterplotMatrix(~ log(crmrte) + polpc +  density + taxpc, data=crime_data_clean)
+scatterplotMatrix(~ crmrte + polpc +  density + taxpc, data=crime_data_clean)
 ```
 
 Crime Rate is positively correlated to police per capita. We consider police staffing a lagging indicator: where crime rate is high, more police officers are deployed.
@@ -196,10 +208,12 @@ A number of variables are provided with average wages in various sectors in each
 
 ```{R}
 corr_w = cor(crime_data_clean[, c(3,4,26,6,7,8,9,10,14,25,15,16,17,18,19,20,21,22,23)])
-corrplot(corr_w[seq(1,10),seq(11,19)])
+corrplot(corr_w[seq(1,10),seq(11,19)], tl.col = "black")
 ```
 
 The first observation is that all of the wage factors are correlated postively with crime rate. This is quite interesting as one might have assumed that areas where people are paid less would be poorer and would be prone to greater crime. This is apparently untrue, most likely because the comparative average wage in each sector is more of a function of the competitiveness of the economy in the county, evidenced by the strong correlation with density. E.g. a person in a particular industry may make more when employed in a city, which for other social reasons has a higher crime rate than a rural area. Incidentally, this data may also not capture the nature of poverty because it appears to be the average wage of the *employed* in this industry and gives no indication of the proportion of unemployed and hence pooer or criminally employed people in the county.
+
+Another possibility is that crime is logged based on the county where it is committed, not the county where the offender reside. This would further assume that a non-neglibigble number of criminals would live in a county with a lower average wage, and go on to commit crime in a nearby, better-off county where victims would be more likely to possess valuables worth stealing. This effect would manifest primarily in property crimes, and the type of crime is unfortunately not avaiable in this dataset.   
 
 An unfortunate correlation is that of the presence of minorities with the service wage - a high proportion of minority residents appears to push down the service wage, possibly due to competition for such jobs. However, a higher service wage does potentially decrease the probability of arrest. As this effect, while useful, appears to be confounded by the density effect, we do not choose to include such variables in our regression.
 
@@ -295,7 +309,7 @@ model1$coefficients
 
 Our hypothesis underlying this simple model is that the crime rate is correlated with the efficiency of the justice system, all other demographic factors being approximately equal as justice deters and controls the proliferation of criminal activity. The negative coefficients above support this with the probability of arrest being a stronger contributor than the probability of conviction.
 
-However, this is not the most complete model, and the R^2^ value is relatively poor and reveals scope for a more sophisticated model:
+However, this is not the most complete model, and the R^2 value is relatively poor and reveals scope for a more sophisticated model:
 ```{R}
 summary(model1)$r.square
 ```
@@ -508,21 +522,18 @@ Model 2 shows significant improvement over Model1 with a better AIC, much better
 
 #5. Discussion - Model Specification & Omitted Variables
 
-It is likely that crime rate will be heavily influenced by the following omitted variables:
+It is likely that crime rate will be heavily influenced by the following omitted variables.
 
-1. Demographics: There is very little information on demographics other than pctmin80 which is based on dated information about minorities; the nature and proportion of particular minorities is omitted here. If, say, a particular cultural group was more prone to crime we would expect greater crime rate. It could be useful to get additional information on the type of people comprising the county population, and inclusion of variables expressing religious make-up could, for example show less crime in regions densly populated by religions valuing non-violence.
 
-2. Education level: Typically we would expect higher the education level to lead to lower the crime rate. This is likely related to educated decision making but also to employment outcomes which promote stability.
-
-3. Wages: The more affluent neighborhoods will tend to have lesser crime. We thought this would be reflectedby tax revenues per capita, but it does not appear to be the case. This may be due to the nature of the taxation system itself in creating a representative variable. 
-
-4. Employment: Gainful employment of citizens is well known to decrease crime rate however, we have no information about the employment rates in each county. The only possibility is to compare the wage rates in each county which could express greater employment when competition has driven rates up. Limited employment may result in the presence of higher-density (social) housing and therefore postitively bias the density coefficient.
-
-5. Commercial Sectors: High crime might be associated with regions which have a lot of bars or similar entertainment venues but less crime in rural residential areas. Such an omitted variable (say indication number of nightlife venues) would potentially bias our density dependance by increasing the co-efficient or even increase the dependence of our model probability of arrest due to police presence in entertainment areas.
-
-6. Age distribution: We are provided with a variable indicating the percent of the population who are young males, but it would be equally useful to be provided with data for children and geriatrics - both parties whose presence would decrease the crime rate. Both of these groups typically increase density, but decrease crime and we would expect their presence to bias the density variable negatively.
-
-7. More detailed crime information: Not all crime is equal, and different types of crime (violent crime, property crime, etc.) might be explained by different factors. Such omitted variables bias the probability of arrest, conviction and average sentence variables. Sentence length, for example, would be dependant on a measure of the proportion of non-violent crime and we may find sentence length is also negatively biased by this omission.
+Category           | Description
+------------------ | ----------------------------------------------------------------
+Demographics       | There is very little information on demographics other than pctmin80 which is based on dated information about minorities; the nature and proportion of particular minorities is omitted here. * If, say, a particular cultural group was more prone to crime we would expect greater crime rate. It could be useful to get additional information on the type of people comprising the county population, and inclusion of variables expressing religious make-up could, for example show less crime in regions densly populated by religions valuing non-violence.
+Education Level    | Typically we would expect higher the education level to lead to lower the crime rate. This is likely related to educated decision making but also to employment outcomes which promote stability.
+Wages              | The more affluent neighborhoods will tend to have lesser crime. We thought this would be reflectedby tax revenues per capita, but it does not appear to be the case. This may be due to the nature of the taxation system itself in creating a representative variable.
+Employment         | Gainful employment of citizens is well known to decrease crime rate however, we have no information about the employment rates in each county. The only possibility is to compare the wage rates in each county which could express greater employment when competition has driven rates up. Limited employment may result in the presence of higher-density (social) housing and therefore postitively bias the density coefficient. 
+Commercial Sectors | High crime might be associated with regions which have a lot of bars or similar entertainment venues but less crime in rural residential areas. Such an omitted variable (say indication number of nightlife venues) would potentially bias our density dependance by increasing the co-efficient or even increase the dependence of our model probability of arrest due to police presence in entertainment areas.
+Age Distribution   | We are provided with a variable indicating the percent of the population who are young males, but it would be equally useful to be provided with data for children and geriatrics - both parties whose presence would decrease the crime rate. Both of these groups typically increase density, but decrease crime and we would expect their presence to bias the density variable negatively.
+Detailed Crime Info| Not all crime is equal, and different types of crime (violent crime, property crime, etc.) might be explained by different factors. Such omitted variables bias the probability of arrest, conviction and average sentence variables. Sentence length, for example, would be dependant on a measure of the proportion of non-violent crime and we may find sentence length is also negatively biased by this omission.
 
 #6. Conclusion
 
