@@ -211,7 +211,7 @@ hist(crime_data_clean$taxpc, breaks = 50,
 
 A number of variables are provided with average wages in various sectors in each county. We can first examine these to see which might be correlated with crime rate or our other key variables.
 
-We initially noted an anomoly with the service industry wage (wser) variable, in that the correlation had the opposite sign. However, it was found that a single value greatly exceeded the normal range of values (see below). The figure is likely a result of decimal place recording error as no other remarkable features are found in this county and a service industry wage this high is abnormal, for the purpose of investigating wage data, this row was temporarily removed.
+We initially noted an anomaly with the service industry wage (wser) variable, in that the correlation had the opposite sign. However, it was found that a single value greatly exceeded the normal range of values (see below). The figure is likely a result of decimal place recording error as no other remarkable features are found in this county and a service industry wage this high is abnormal, for the purpose of investigating wage data, this row was temporarily removed.
 ```{R}
 summary(crime_data_clean$wser)
 crime_data_clean3 = subset(crime_data_clean, crime_data_clean$wser < 1000)
@@ -570,15 +570,21 @@ Model 2 shows significant improvement over Model1 with a better AIC, much better
 It is likely that crime rate will be heavily influenced by the following omitted variables.
 
 
-Category           | Description
+Variable Category  | 
 ------------------ | ----------------------------------------------------------------
-Demographics       | There is very little information on demographics other than pctmin80 which is based on dated information about minorities; the nature and proportion of particular minorities is omitted here. * If, say, a particular cultural group was more prone to crime we would expect greater crime rate. It could be useful to get additional information on the type of people comprising the county population, and inclusion of variables expressing religious make-up could, for example show less crime in regions densly populated by religions valuing non-violence.
-Education Level    | Typically we would expect higher the education level to lead to lower the crime rate. This is likely related to educated decision making but also to employment outcomes which promote stability.
-Wages              | The more affluent neighborhoods will tend to have lesser crime. We thought this would be reflectedby tax revenues per capita, but it does not appear to be the case. This may be due to the nature of the taxation system itself in creating a representative variable.
-Employment         | Gainful employment of citizens is well known to decrease crime rate however, we have no information about the employment rates in each county. The only possibility is to compare the wage rates in each county which could express greater employment when competition has driven rates up. Limited employment may result in the presence of higher-density (social) housing and therefore postitively bias the density coefficient. 
-Commercial Sectors | High crime might be associated with regions which have a lot of bars or similar entertainment venues but less crime in rural residential areas. Such an omitted variable (say indication number of nightlife venues) would potentially bias our density dependance by increasing the co-efficient or even increase the dependence of our model probability of arrest due to police presence in entertainment areas.
-Age Distribution   | We are provided with a variable indicating the percent of the population who are young males, but it would be equally useful to be provided with data for children and geriatrics - both parties whose presence would decrease the crime rate. Both of these groups typically increase density, but decrease crime and we would expect their presence to bias the density variable negatively.
-Detailed Crime Info| Not all crime is equal, and different types of crime (violent crime, property crime, etc.) might be explained by different factors. Such omitted variables bias the probability of arrest, conviction and average sentence variables. Sentence length, for example, would be dependant on a measure of the proportion of non-violent crime and we may find sentence length is also negatively biased by this omission.
+Demographics       | The dataset contains little information about demographics. The pctmin80 variable, for example, is based on dated information about minorities, and it does not break down into proportions for particular minorities. Updated, more granular information could help model crime rate. Other demographics variables, such as religious make up, could also be relevant to our analysis due to their potential impact on criminal activity.
+                   |
+Education Level    | We expect higher education levels to be correlated with lower crime rates, and it could lead to interesting policy recommendations, but that information is unfortunately not available in the datset. 
+                   |
+Employment         | We assume employment rate to be negatively correlated with the crime rate, but the dataset does not contain employment-related information. The e considered using wage information as a proxy, under the reasoning that lower employment would result in upward pressure on wages. Scarcity of labor is, however, only one of many factors affecting wages, which means the proxy could be significantly biased. The absence of employment data might bias our models by attributing high crime rates to other factors, when lack of job prospects could be the actual cause. 
+                   |
+Land Use           | Crime rates might be correlated with land use planning practices. We expect, for example, areas with with vibrant nightlife and rural ares to experience different rates and types of crimes. This omitted variable would potentially bias our density dependance by increasing the co-efficient or even increase the dependence of our model probability of arrest due to police presence in certain urban areas.
+                   |
+Age Distribution   | The only variable provided was the percent of the population who are young males. It would be useful to have similar information about other age groups as well. We expect groupslike young children and seniors to have a negative effect on crime rate. Both of these groups typically increase density, but decrease crime and we would expect their presence to bias the density variable negatively.
+                   |
+Crime Information  | Different types of crime (violent crime, property crime, etc.) might be correlated with different variables. Omitting this variable could bias the probability of arrest, conviction and average sentence. Sentence length, for example, would be dependant on a measure of the proportion of non-violent crime and we may find sentence length is also negatively biased by this omission.
+                   |
+Wages              | We presuppose higher wages affect the risk equation for committing crimes, but increasing the cost (if caught), and lowering the relative value of the rewards. The dataset does include certain wage information, though we found their effects to run counter to our expectations, and it had high correlation with density. Perhaps more information regarding wages (such as quartiles) and employment data could help understand this effect better.
 
 ## Practical Significance of Causal Model
 
