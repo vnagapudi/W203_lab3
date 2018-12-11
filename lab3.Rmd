@@ -260,7 +260,7 @@ cor(crime_data_clean$crmrte,crime_data_clean$pctmin80)
 The correlation is weak in both cases.
 \pagebreak
 
-# 3. Data Transformation
+#4. Data Transformation
 
 ## Crime Rate
 
@@ -328,7 +328,7 @@ crime_data_clean['log_polpc'] = log(crime_data_clean$polpc)
 
 \pagebreak
 
-# 4. Regression Modelling
+#5. Regression Modeling
 
 
 ## Model 1 - minimal using the Judicial system variables only
@@ -578,7 +578,7 @@ Model 2 shows significant improvement over Model1 with a better AIC, much better
 
 \pagebreak
 
-#5. Discussion 
+#6. Discussion 
 
 ## Model Specification & Omitted Variables
 
@@ -591,9 +591,9 @@ Demographics       | The dataset contains little information about demographics.
                    |
 Education Level    | We expect higher education levels to be correlated with lower crime rates, and it could lead to interesting policy recommendations, but that information is unfortunately not available in the dataset. 
                    |
-Employment         | We assume employment rate to be negatively correlated with the crime rate, but the dataset does not contain employment-related information. The e considered using wage information as a proxy, under the reasoning that lower employment would result in upward pressure on wages. Scarcity of labor is, however, only one of many factors affecting wages, which means the proxy could be significantly biased. The absence of employment data might bias our models by attributing high crime rates to other factors, when lack of job prospects could be the actual cause. 
+Employment         | We assume employment rate to be negatively correlated with the crime rate, but the dataset does not contain employment-related information. We considered using wage information as a proxy, under the reasoning that lower employment would result in upward pressure on wages. Scarcity of labor is, however, only one of many factors affecting wages, which means the proxy could be significantly biased. The absence of employment data might bias our models by attributing high crime rates to other factors, when lack of job prospects could be the actual cause. 
                    |
-Land Use           | Crime rates might be correlated with land use planning practices. We expect, for example, areas with with vibrant nightlife and rural ares to experience different rates and types of crimes. This omitted variable would potentially bias our density dependence by increasing the co-efficient or even increase the dependence of our model probability of arrest due to police presence in certain urban areas.
+Land Use           | Crime rates might be correlated with land use planning practices. We expect, for example, areas with with vibrant nightlife and rural ares to experience different rates and types of crimes. This omitted variable would potentially bias our density dependence by increasing the coefficient or even increase the dependence of our model probability of arrest due to police presence in certain urban areas.
                    |
 Age Distribution   | The only variable provided was the percent of the population who are young males. It would be useful to have similar information about other age groups as well. We expect groups like young children and seniors to have a negative effect on crime rate. Both of these groups typically increase density, but decrease crime and we would expect their presence to bias the density variable negatively.
                    |
@@ -627,7 +627,9 @@ sd(crime_data_clean$prbarr)
 
 The association with percentage of minorities gives approximately percent-for-percent increase in crime rate. Note that the nature of this variable should not influence a desire to change the value of the measure itself but gives a basis to examine how this correlation can be reduced to the point of insignificance in terms of effect size.
 
-#6. Conclusions
+\pagebreak
+
+#7. Conclusions
 
 Based on these results of our regression, we have a better understanding of causal factors that lead to an increase or decrease in the crime rate. Based on our analysis, we make the following recommendations:
 
@@ -644,5 +646,10 @@ Another useful longer-term approach which is supported by our causal modelling i
 3. Better education and employment
 
 While the regression data does not include the effects of better education and employment on crime rate, there are some indications that the presence of more minorities and young males results in higher crime rates. Policy makers can focus on better education amongst youth and minorities so that the resulting higher employment rates lead to lower crime rates among that group. This would have the added benefit of increased tax revenues, which would provide another tangible benefit to the community.
+
+\pagebreak
+
+#8. Acknowledgements
+We wish to thank Neha Kumar, Sid Jakkamreddy and Brian Musisi for their valuable feedback on our preliminary report. We also thank them for the opportunity to learn from their analysis. In particular, we understood the brevity and effectiveness of using correlation plots to describe dependencies between variables, and incorporated similar plots in our report as well.
 
 
