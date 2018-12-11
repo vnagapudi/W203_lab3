@@ -522,6 +522,7 @@ plot(model2, cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9, cex.sub	= 0.5, which
 * *MLR3 Colinearity*: Inspection of scatterplots above did not reveal any perfect colinearity amongst the chosen varaibles.
 * *MLR4 Zero Conditional Mean*: Further improvement and no violation of zero conditional mean in this model.
 * *MLR5 Homoskedasticity*: This model appears to have futher improved the scale location plot and the Breusch-Pagan test fails to reject homoskedasticity.
+
 ```{R}
 bptest(model2)
 ```
@@ -567,7 +568,7 @@ Let's also compare the BIC in these 3 cases:
 BIC(model1, model2, model3_no_polpc)
 ```
 
-Model 2 shows significant improvement over Model1 with a better AIC, much better R^2^ and lower Residual SE. We note that the F-test supports all three models, but our chosen model has a greater statistic, suggesting strong joint significance of our model. Additionally, the BIC (another goodness of fit measure which penalises addition of variables) for Model 2 is better than Model 3 as well which makes a very strong case for Model 2 as the superior model..
+Model 2 shows significant improvement over Model1 with a better AIC, much better R^2^ and lower Residual SE. We note that the F-test supports all three models, but our chosen model has a greater statistic, suggesting strong joint significance of our model. Additionally, the BIC (another goodness of fit measure which penalises addition of variables) for Model 2 is better than Model 3 as well which makes a very strong case for Model 2 as the superior model.
 
 \pagebreak
 
@@ -596,7 +597,7 @@ Wages              | We presuppose higher wages affect the risk equation for com
 
 ## Practical Significance of Causal Model
 
-Based on our analysis, the probability of arrest and conviction help drive down crime rates. Increasing the probability of arrest by one unit is correlated with a 181% decrease in crime rate. Increasing the probability of conviction by one unit is correlated with a 61% decrease in crime rate. 
+Based on our analysis, the probabilities of arrest and conviction help drive down crime rates. Increasing the probability of arrest by one unit is correlated with a 181% decrease in crime rate. Increasing the probability of conviction by one unit is correlated with a 61% decrease in crime rate. 
 
 Density is positively correlated with crime rate. An increase of one unit in density is correlated with a 36% increase in the crime rate.
 
@@ -606,14 +607,14 @@ Based on these results of our regression, we have a better understanding of caus
 
 1. Fear of punishment
 
-Our analysis shows that the higher the probability of arrest and conviction, the lower the crime rate. The fear of punishment is definitely a very effective tool to combat crime. As such, we recommend that the policy makers increase awareness of the effectiveness of the judicial system to reduce crime.Bringing pepetrators to justice with an effective police force could reduce overall crime rates significantly.
+Our analysis shows that the higher the probabilities of arrest and conviction, the lower the crime rate. The fear of punishment is an effective tool to deter would-be criminals. As such, we recommend that policy makers increase awareness of the effectiveness of the judicial system to reduce crime. Bringing pepetrators to justice with an effective police force could significantly reduce crime rates.
 
-2. Crime watching in densely populated areas
+2. Increased police presence in densely populated areas
 
-Our analysis shows that in densely populated areas, the crime rate tends to be much higher. There coud be several factors at play here including demographics, the density of police force, the earned wages and so on. In particular, policy makers should ensure that there is a larger active police force in densely populated areas to battle crime more effectively.
+Our analysis shows that in densely populated areas, the crime rate tends to be higher. There coud be several factors at play here including demographics, socio-economic indicators, the size of the police force, earned wages, and others. In particular, policy makers should ensure that there is a well-staffed police force in densely populated areas to deter crime more effectively.
 
 3. Better education and employment
 
-While the regression data does not include the effects of better education and employment on crime rate, there are some indications that the presence of more minorities and young males results in higher crime rates. Policy makers can focus on better education amongst youth and minorities so that the resulting higher employment rates lead to lower crime rates
+While the regression data does not include the effects of better education and employment on crime rate, there are some indications that the presence of more minorities and young males results in higher crime rates. Policy makers can focus on better education amongst youth and minorities so that the resulting higher employment rates lead to lower crime rates among that group. This would have the added benefit of increased tax revenues, which would provide another tangible benefit to the community.
 
 
