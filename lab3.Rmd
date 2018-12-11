@@ -115,7 +115,7 @@ crime_data_clean = crime_data_corr4
 
 # 3. Identification of Key Variables
 
-### Dependent Variable
+## Dependent Variable
 
 Crime rate ("crmrte") is the key dependent variable in this study and represents the number of crimes committed per person in each county. 
 
@@ -141,7 +141,7 @@ corrplot(cor(crime_data_clean[, c(3,4,26,6,7,8,9,10,14,24,25)]), method="ellipse
 
 We note the cases with particularly high correlation with crmrte and examine them below as candidate regression variables. Note that due to the sample size and desire to maintain applicability of the Central Limit Theorem as well as limited definition of the differences, sizes or boundaries of these geographic regions, we have not partitioned our dataset using the "central"/"west"/"urban" variables.
 
-### Independent Variables - Judicial
+## Independent Variables - Judicial
 
 1. Probablity of Arrest ("prbarr")
 2. Probability of Conviction ("prbconv")
@@ -167,7 +167,7 @@ There is a small correlation, but it is unclear as to whether there will be a ca
 plot(crime_data_clean$avgsen, crime_data_clean$crmrte)
 ```
 
-### Independent Variables - Demographic
+## Independent Variables - Demographic
 1. Police per capita ("polpc")
 2. Density ("density")
 3. Tax revenue per capita ("taxpc")
@@ -176,7 +176,7 @@ plot(crime_data_clean$avgsen, crime_data_clean$crmrte)
 
 The second set of independent variables are demographic factors which may lead to changes in crime rate, typically in relation to the affluence of the county. Given that the data is collected at county level, these represent an average and any one county may contain a mix of areas (urban/suburban, wealthy/low-income) with corresponding variations in demographics and crimes, which are not captured in this dataset.
 
-#### Policing / Density / Tax Revenue
+## Policing / Density / Tax Revenue
 
 We examined the effect of police staffing, population density and tax revenue:
 ```{r fig.height=4.3, fig.width=5.5, fig.align='center'}
@@ -207,7 +207,7 @@ hist(crime_data_clean$taxpc, breaks = 50,
      xlab = 'Tax Revenue Per Capita', cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9)
 ```
 
-### Wage Data
+## Wage Data
 
 A number of variables are provided with average wages in various sectors in each county. We can first examine these to see which might be correlated with crime rate or our other key variables.
 
@@ -228,7 +228,7 @@ Another possibility is that crime is logged based on the county where it is comm
 
 An unfortunate correlation is that of the presence of minorities with the service wage - a high proportion of minority residents appears to push down the service wage, possibly due to competition for such jobs. However, a higher service wage does potentially decrease the probability of arrest. As this effect, while useful, appears to be confounded by the density effect, we do not choose to include such variables in our regression.
 
-#### Minorities and Young Males
+## Minorities and Young Males
 
 Here we examine the relationship between the proportion of young males ("pctymle") and the percentage of minority population ("pctmin80") with crime rate:
 
@@ -588,14 +588,24 @@ Wages              | We presuppose higher wages affect the risk equation for com
 
 ## Practical Significance of Causal Model
 
-Based on our analysis, the probability of arrest and conviction help drive down crime rates. Increasing the probability of arrest by one unit is correlated with a 186% decrease in crime rate. Increasing the probability of conviction by one unit is correlated with a 71% decrease in crime rate. 
+Based on our analysis, the probability of arrest and conviction help drive down crime rates. Increasing the probability of arrest by one unit is correlated with a 181% decrease in crime rate. Increasing the probability of conviction by one unit is correlated with a 61% decrease in crime rate. 
 
-Density is positively correlated with crime rate. An increase of one unit in density is correlated with a 35% increase in the crime rate. 
+Density is positively correlated with crime rate. An increase of one unit in density is correlated with a 36% increase in the crime rate.
 
-#6. Conclusion
+#6. Conclusions
 
-Based on these results, our policy recommendations would be to:
+Based on these results of our regression, we have a better understanding of causal factors that lead to an increase or decrease in the crime rate. Based on our analsys, we make the following recommendations:
 
-1. Increase awareness of the effectiveness of the judicial system in counties that are effective at bringing perpetrators to justice; and increase resources, training, and oversight in those that are not.
+1. Fear of punishment
 
-2. Further investigation of the link between population density and crime rate. Are there economic factors at play? Demographics? Policing techniques in urban settings? 
+Our analysis shows that the higher the probability of arrest and conviction, the lower the crime rate. The fear of punishment is definitely a very effective tool to combat crime. As such, we recommend that the policy makers increase awareness of the effectiveness of the judicial system to reduce crime.Bringing pepetrators to justice with an effective police force could reduce overall crime rates significantly.
+
+2. Crime watching in densely populated areas
+
+Our analysis shows that in densely populated areas, the crime rate tends to be much higher. There coud be several factors at play here including demographics, the density of police force, the earned wages and so on. In particular, policy makers should ensure that there is a larger active police force in densely populated areas to battle crime more effectively.
+
+3. Better education and employment
+
+While the regression data does not include the effects of better education and employment on crime rate, there are some indications that the presence of more minorities and young males results in higher crime rates. Policy makers can focus on better education amongst youth and minorities so that the resulting higher employment rates lead to lower crime rates
+
+
